@@ -136,4 +136,4 @@ scripts/    geração e validação dos circuitos F1
 
 ## Licença
 
-Código sob a licença [MIT](LICENSE): use, estude e adapte à vontade. O nome, o logo e a identidade visual do LAMIA **não** entram na licença, pois pertencem ao laboratório.
+Código sob a licença [MIT](LICENSE): use, estude e adapte à vontade. O nome, o logo e a identidade visual do LAMIA **não** entram na licença, pois pertencem ao laboratório (veja [NOTICE](NOTICE)).

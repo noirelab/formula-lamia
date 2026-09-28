@@ -19,13 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-The LAMIA name, logo (src/assets/lamia-icon.webp, src/assets/lamia-flask.png)
-and visual identity belong to LAMIA (Machine Learning for Industry) and are
-not covered by this license.
-
-Circuit layouts in scripts/f1-circuits.geojson and src/engine/circuits.ts are
-derived from bacinger/f1-circuits, MIT License, Copyright (c) 2019-2025
-Tomislav Bacinger.
