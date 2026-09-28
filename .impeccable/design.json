@@ -1,0 +1,527 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-28T17:39:35+00:00",
+  "title": "Design System: Carrinhos que aprendem a dirigir",
+  "extensions": {
+    "colorMeta": {
+      "navy": {
+        "role": "primary",
+        "displayName": "LAMIA Navy",
+        "canonical": "#04497D",
+        "tonalRamp": [
+          "oklch(15% 0.107 248.9)",
+          "oklch(26% 0.107 248.9)",
+          "oklch(38% 0.107 248.9)",
+          "oklch(49% 0.107 248.9)",
+          "oklch(61% 0.107 248.9)",
+          "oklch(72% 0.107 248.9)",
+          "oklch(84% 0.107 248.9)",
+          "oklch(95% 0.107 248.9)"
+        ]
+      },
+      "navy-deep": {
+        "role": "primary",
+        "displayName": "Navy Deep",
+        "canonical": "#03355C",
+        "tonalRamp": [
+          "oklch(15% 0.085 248.6)",
+          "oklch(26% 0.085 248.6)",
+          "oklch(38% 0.085 248.6)",
+          "oklch(49% 0.085 248.6)",
+          "oklch(61% 0.085 248.6)",
+          "oklch(72% 0.085 248.6)",
+          "oklch(84% 0.085 248.6)",
+          "oklch(95% 0.085 248.6)"
+        ]
+      },
+      "teal": {
+        "role": "secondary",
+        "displayName": "Petrol Teal",
+        "canonical": "#0E85A8",
+        "tonalRamp": [
+          "oklch(15% 0.106 225.3)",
+          "oklch(26% 0.106 225.3)",
+          "oklch(38% 0.106 225.3)",
+          "oklch(49% 0.106 225.3)",
+          "oklch(61% 0.106 225.3)",
+          "oklch(72% 0.106 225.3)",
+          "oklch(84% 0.106 225.3)",
+          "oklch(95% 0.106 225.3)"
+        ]
+      },
+      "orange": {
+        "role": "tertiary",
+        "displayName": "Leader Orange",
+        "canonical": "#F97A25",
+        "tonalRamp": [
+          "oklch(15% 0.179 48.7)",
+          "oklch(26% 0.179 48.7)",
+          "oklch(38% 0.179 48.7)",
+          "oklch(49% 0.179 48.7)",
+          "oklch(61% 0.179 48.7)",
+          "oklch(72% 0.179 48.7)",
+          "oklch(84% 0.179 48.7)",
+          "oklch(95% 0.179 48.7)"
+        ]
+      },
+      "orange-ink": {
+        "role": "tertiary",
+        "displayName": "Orange Ink",
+        "canonical": "#B8520B",
+        "tonalRamp": [
+          "oklch(15% 0.150 47.3)",
+          "oklch(26% 0.150 47.3)",
+          "oklch(38% 0.150 47.3)",
+          "oklch(49% 0.150 47.3)",
+          "oklch(61% 0.150 47.3)",
+          "oklch(72% 0.150 47.3)",
+          "oklch(84% 0.150 47.3)",
+          "oklch(95% 0.150 47.3)"
+        ]
+      },
+      "red": {
+        "role": "tertiary",
+        "displayName": "Crash Red",
+        "canonical": "#C8262C",
+        "tonalRamp": [
+          "oklch(15% 0.196 25.4)",
+          "oklch(26% 0.196 25.4)",
+          "oklch(38% 0.196 25.4)",
+          "oklch(49% 0.196 25.4)",
+          "oklch(61% 0.196 25.4)",
+          "oklch(72% 0.196 25.4)",
+          "oklch(84% 0.196 25.4)",
+          "oklch(95% 0.196 25.4)"
+        ]
+      },
+      "child-cyan": {
+        "role": "tertiary",
+        "displayName": "Child Cyan",
+        "canonical": "#7FD3EE",
+        "tonalRamp": [
+          "oklch(15% 0.090 220.6)",
+          "oklch(26% 0.090 220.6)",
+          "oklch(38% 0.090 220.6)",
+          "oklch(49% 0.090 220.6)",
+          "oklch(61% 0.090 220.6)",
+          "oklch(72% 0.090 220.6)",
+          "oklch(84% 0.090 220.6)",
+          "oklch(95% 0.090 220.6)"
+        ]
+      },
+      "asphalt": {
+        "role": "neutral",
+        "displayName": "Asphalt",
+        "canonical": "#22364D",
+        "tonalRamp": [
+          "oklch(15% 0.049 252.7)",
+          "oklch(26% 0.049 252.7)",
+          "oklch(38% 0.049 252.7)",
+          "oklch(49% 0.049 252.7)",
+          "oklch(61% 0.049 252.7)",
+          "oklch(72% 0.049 252.7)",
+          "oklch(84% 0.049 252.7)",
+          "oklch(95% 0.049 252.7)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "#0B2239",
+        "tonalRamp": [
+          "oklch(15% 0.053 250.8)",
+          "oklch(26% 0.053 250.8)",
+          "oklch(38% 0.053 250.8)",
+          "oklch(49% 0.053 250.8)",
+          "oklch(61% 0.053 250.8)",
+          "oklch(72% 0.053 250.8)",
+          "oklch(84% 0.053 250.8)",
+          "oklch(95% 0.053 250.8)"
+        ]
+      },
+      "ink-soft": {
+        "role": "neutral",
+        "displayName": "Ink Soft",
+        "canonical": "#3C4F63",
+        "tonalRamp": [
+          "oklch(15% 0.041 250.1)",
+          "oklch(26% 0.041 250.1)",
+          "oklch(38% 0.041 250.1)",
+          "oklch(49% 0.041 250.1)",
+          "oklch(61% 0.041 250.1)",
+          "oklch(72% 0.041 250.1)",
+          "oklch(84% 0.041 250.1)",
+          "oklch(95% 0.041 250.1)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted",
+        "canonical": "#53667A",
+        "tonalRamp": [
+          "oklch(15% 0.039 249.9)",
+          "oklch(26% 0.039 249.9)",
+          "oklch(38% 0.039 249.9)",
+          "oklch(49% 0.039 249.9)",
+          "oklch(61% 0.039 249.9)",
+          "oklch(72% 0.039 249.9)",
+          "oklch(84% 0.039 249.9)",
+          "oklch(95% 0.039 249.9)"
+        ]
+      },
+      "chart-muted": {
+        "role": "neutral",
+        "displayName": "Chart Muted",
+        "canonical": "#8A9AAB",
+        "tonalRamp": [
+          "oklch(15% 0.031 249.9)",
+          "oklch(26% 0.031 249.9)",
+          "oklch(38% 0.031 249.9)",
+          "oklch(49% 0.031 249.9)",
+          "oklch(61% 0.031 249.9)",
+          "oklch(72% 0.031 249.9)",
+          "oklch(84% 0.031 249.9)",
+          "oklch(95% 0.031 249.9)"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "canonical": "#FFFFFF",
+        "tonalRamp": [
+          "oklch(15% 0.000 89.9)",
+          "oklch(26% 0.000 89.9)",
+          "oklch(38% 0.000 89.9)",
+          "oklch(49% 0.000 89.9)",
+          "oklch(61% 0.000 89.9)",
+          "oklch(72% 0.000 89.9)",
+          "oklch(84% 0.000 89.9)",
+          "oklch(95% 0.000 89.9)"
+        ]
+      },
+      "paper-2": {
+        "role": "neutral",
+        "displayName": "Graph Paper",
+        "canonical": "#F4F7FB",
+        "tonalRamp": [
+          "oklch(15% 0.006 255.5)",
+          "oklch(26% 0.006 255.5)",
+          "oklch(38% 0.006 255.5)",
+          "oklch(49% 0.006 255.5)",
+          "oklch(61% 0.006 255.5)",
+          "oklch(72% 0.006 255.5)",
+          "oklch(84% 0.006 255.5)",
+          "oklch(95% 0.006 255.5)"
+        ]
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Rule",
+        "canonical": "#D6E0EB",
+        "tonalRamp": [
+          "oklch(15% 0.019 250.6)",
+          "oklch(26% 0.019 250.6)",
+          "oklch(38% 0.019 250.6)",
+          "oklch(49% 0.019 250.6)",
+          "oklch(61% 0.019 250.6)",
+          "oklch(72% 0.019 250.6)",
+          "oklch(84% 0.019 250.6)",
+          "oklch(95% 0.019 250.6)"
+        ]
+      },
+      "rule-2": {
+        "role": "neutral",
+        "displayName": "Rule 2",
+        "canonical": "#E8EEF5",
+        "tonalRamp": [
+          "oklch(15% 0.011 252.1)",
+          "oklch(26% 0.011 252.1)",
+          "oklch(38% 0.011 252.1)",
+          "oklch(49% 0.011 252.1)",
+          "oklch(61% 0.011 252.1)",
+          "oklch(72% 0.011 252.1)",
+          "oklch(84% 0.011 252.1)",
+          "oklch(95% 0.011 252.1)"
+        ]
+      },
+      "grid": {
+        "role": "neutral",
+        "displayName": "Grid",
+        "canonical": "#E1E9F2",
+        "tonalRamp": [
+          "oklch(15% 0.015 251.2)",
+          "oklch(26% 0.015 251.2)",
+          "oklch(38% 0.015 251.2)",
+          "oklch(49% 0.015 251.2)",
+          "oklch(61% 0.015 251.2)",
+          "oklch(72% 0.015 251.2)",
+          "oklch(84% 0.015 251.2)",
+          "oklch(95% 0.015 251.2)"
+        ]
+      },
+      "grid-bold": {
+        "role": "neutral",
+        "displayName": "Grid Bold",
+        "canonical": "#CCD9E7",
+        "tonalRamp": [
+          "oklch(15% 0.024 250.1)",
+          "oklch(26% 0.024 250.1)",
+          "oklch(38% 0.024 250.1)",
+          "oklch(49% 0.024 250.1)",
+          "oklch(61% 0.024 250.1)",
+          "oklch(72% 0.024 250.1)",
+          "oklch(84% 0.024 250.1)",
+          "oklch(95% 0.024 250.1)"
+        ]
+      },
+      "selected-wash": {
+        "role": "neutral",
+        "displayName": "Selected Wash",
+        "canonical": "#E6F1F8",
+        "tonalRamp": [
+          "oklch(15% 0.015 235.4)",
+          "oklch(26% 0.015 235.4)",
+          "oklch(38% 0.015 235.4)",
+          "oklch(49% 0.015 235.4)",
+          "oklch(61% 0.015 235.4)",
+          "oklch(72% 0.015 235.4)",
+          "oklch(84% 0.015 235.4)",
+          "oklch(95% 0.015 235.4)"
+        ]
+      },
+      "confirm-wash": {
+        "role": "neutral",
+        "displayName": "Confirm Wash",
+        "canonical": "#FFF4EC",
+        "tonalRamp": [
+          "oklch(15% 0.016 58.6)",
+          "oklch(26% 0.016 58.6)",
+          "oklch(38% 0.016 58.6)",
+          "oklch(49% 0.016 58.6)",
+          "oklch(61% 0.016 58.6)",
+          "oklch(72% 0.016 58.6)",
+          "oklch(84% 0.016 58.6)",
+          "oklch(95% 0.016 58.6)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Masthead title only."
+      },
+      "numeral-hero": {
+        "displayName": "Numeral Hero",
+        "purpose": "Generation number in the tower."
+      },
+      "numeral-stat": {
+        "displayName": "Numeral Stat",
+        "purpose": "Record and best lap."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Circuit name under the map."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Section headings."
+      },
+      "bulletin": {
+        "displayName": "Bulletin",
+        "purpose": "Live narration line."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Explanatory text, 70ch max."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Buttons, select, field labels, chips."
+      },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "Hints, legends, units."
+      }
+    },
+    "shadows": [
+      {
+        "name": "map-lift",
+        "value": "0 1px 0 rgba(4,73,125,.04), 0 12px 32px -18px rgba(4,73,125,.35)",
+        "purpose": "Circuit map canvas resting on the page."
+      },
+      {
+        "name": "chip-float",
+        "value": "0 6px 18px -8px rgba(3,26,52,.6)",
+        "purpose": "Status chips over the map."
+      },
+      {
+        "name": "sheet-over-map",
+        "value": "0 24px 60px -20px rgba(3,26,52,.55)",
+        "purpose": "Dialog card and transition sheets over the map."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Control state transitions at .15s; disabled under prefers-reduced-motion."
+      },
+      {
+        "name": "sheet-ease",
+        "value": "1 - (1 - t)^3",
+        "purpose": "Canvas transition sheets slide 30-50 world units and fade in; rows stagger by 0.15."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "steps-stack",
+        "value": "900px"
+      },
+      {
+        "name": "board-stack",
+        "value": "1180px"
+      },
+      {
+        "name": "app-max",
+        "value": "1760px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Button",
+      "kind": "button",
+      "refersTo": "button",
+      "description": "Thin-wire default action: paper face, navy label, 1.5px rule border.",
+      "html": "<button class=\"ds-btn\">Próxima pista</button> <button class=\"ds-btn\" disabled>Comparar gerações</button>",
+      "css": ":host{--paper:#FFFFFF;--paper-2:#F4F7FB;--rule:#D6E0EB;--rule-2:#E8EEF5;--ink:#0B2239;--muted:#53667A;--navy:#04497D;--navy-deep:#03355C;--teal:#0E85A8;--orange:#F97A25;--orange-ink:#B8520B;--red:#C8262C;--display:\"Saira Condensed\",\"Arial Narrow\",system-ui,sans-serif;--body:Saira,system-ui,sans-serif;--ease-out:cubic-bezier(0.16,1,0.3,1)} .ds-btn{font:600 15px/1.1 var(--body);color:var(--navy);background:var(--paper);border:1.5px solid var(--rule);border-radius:6px;padding:10px 14px;min-height:42px;cursor:pointer;transition:background-color .15s var(--ease-out),border-color .15s var(--ease-out),color .15s var(--ease-out)} .ds-btn:hover:not(:disabled){border-color:var(--navy)} .ds-btn:focus-visible{outline:3px solid var(--orange);outline-offset:2px} .ds-btn:disabled{color:#9AA9B8;border-color:var(--rule-2);cursor:default}"
+    },
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Navy fill for the one recommended action in a group.",
+      "html": "<button class=\"ds-btn ds-btn-primary\">Tela cheia</button>",
+      "css": ":host{--paper:#FFFFFF;--paper-2:#F4F7FB;--rule:#D6E0EB;--rule-2:#E8EEF5;--ink:#0B2239;--muted:#53667A;--navy:#04497D;--navy-deep:#03355C;--teal:#0E85A8;--orange:#F97A25;--orange-ink:#B8520B;--red:#C8262C;--display:\"Saira Condensed\",\"Arial Narrow\",system-ui,sans-serif;--body:Saira,system-ui,sans-serif;--ease-out:cubic-bezier(0.16,1,0.3,1)} .ds-btn{font:600 15px/1.1 var(--body);color:var(--navy);background:var(--paper);border:1.5px solid var(--rule);border-radius:6px;padding:10px 14px;min-height:42px;cursor:pointer;transition:background-color .15s var(--ease-out),border-color .15s var(--ease-out),color .15s var(--ease-out)} .ds-btn:hover:not(:disabled){border-color:var(--navy)} .ds-btn:focus-visible{outline:3px solid var(--orange);outline-offset:2px} .ds-btn:disabled{color:#9AA9B8;border-color:var(--rule-2);cursor:default} .ds-btn-primary{background:var(--navy);border-color:var(--navy);color:#fff} .ds-btn-primary:hover:not(:disabled){background:var(--navy-deep)}"
+    },
+    {
+      "name": "Quiet Button",
+      "kind": "button",
+      "refersTo": "button-quiet",
+      "description": "Least important action in a stack.",
+      "html": "<button class=\"ds-btn ds-btn-quiet\">Desenhar de novo</button>",
+      "css": ":host{--paper:#FFFFFF;--paper-2:#F4F7FB;--rule:#D6E0EB;--rule-2:#E8EEF5;--ink:#0B2239;--muted:#53667A;--navy:#04497D;--navy-deep:#03355C;--teal:#0E85A8;--orange:#F97A25;--orange-ink:#B8520B;--red:#C8262C;--display:\"Saira Condensed\",\"Arial Narrow\",system-ui,sans-serif;--body:Saira,system-ui,sans-serif;--ease-out:cubic-bezier(0.16,1,0.3,1)} .ds-btn{font:600 15px/1.1 var(--body);color:var(--navy);background:var(--paper);border:1.5px solid var(--rule);border-radius:6px;padding:10px 14px;min-height:42px;cursor:pointer;transition:background-color .15s var(--ease-out),border-color .15s var(--ease-out),color .15s var(--ease-out)} .ds-btn:hover:not(:disabled){border-color:var(--navy)} .ds-btn:focus-visible{outline:3px solid var(--orange);outline-offset:2px} .ds-btn:disabled{color:#9AA9B8;border-color:var(--rule-2);cursor:default} .ds-btn-quiet{border-color:transparent;color:var(--muted)}"
+    },
+    {
+      "name": "Segmented Control",
+      "kind": "custom",
+      "refersTo": "segment-pressed",
+      "description": "Fused buttons for speed and sensor count; pressed is navy.",
+      "html": "<div class=\"ds-seg\" role=\"group\"><button aria-pressed=\"true\">1×</button><button aria-pressed=\"false\">3×</button><button aria-pressed=\"false\">10×</button><button aria-pressed=\"false\">30×</button></div>",
+      "css": ":host{--paper:#FFFFFF;--paper-2:#F4F7FB;--rule:#D6E0EB;--rule-2:#E8EEF5;--ink:#0B2239;--muted:#53667A;--navy:#04497D;--navy-deep:#03355C;--teal:#0E85A8;--orange:#F97A25;--orange-ink:#B8520B;--red:#C8262C;--display:\"Saira Condensed\",\"Arial Narrow\",system-ui,sans-serif;--body:Saira,system-ui,sans-serif;--ease-out:cubic-bezier(0.16,1,0.3,1)} .ds-seg{display:inline-flex} .ds-seg button{font:600 15px/1.1 var(--body);color:var(--navy);background:var(--paper);border:1.5px solid var(--rule);border-radius:0;margin-left:-1.5px;min-width:52px;min-height:42px;padding:10px 14px;cursor:pointer} .ds-seg button:first-child{border-radius:6px 0 0 6px;margin-left:0} .ds-seg button:last-child{border-radius:0 6px 6px 0} .ds-seg button[aria-pressed=\"true\"]{background:var(--navy);border-color:var(--navy);color:#fff;position:relative} .ds-seg button:hover:not([aria-pressed=\"true\"]){background:var(--paper-2)} .ds-seg button:focus-visible{outline:3px solid var(--orange);outline-offset:2px}"
+    },
+    {
+      "name": "Circuit Select",
+      "kind": "input",
+      "refersTo": "select",
+      "description": "Native select dressed as a button.",
+      "html": "<select class=\"ds-select\"><option>Interlagos</option><option>Pista sorteada</option></select>",
+      "css": ":host{--paper:#FFFFFF;--paper-2:#F4F7FB;--rule:#D6E0EB;--rule-2:#E8EEF5;--ink:#0B2239;--muted:#53667A;--navy:#04497D;--navy-deep:#03355C;--teal:#0E85A8;--orange:#F97A25;--orange-ink:#B8520B;--red:#C8262C;--display:\"Saira Condensed\",\"Arial Narrow\",system-ui,sans-serif;--body:Saira,system-ui,sans-serif;--ease-out:cubic-bezier(0.16,1,0.3,1)} .ds-select{font:600 15px/1.1 var(--body);color:var(--navy);background:var(--paper);border:1.5px solid var(--rule);border-radius:6px;padding:10px 12px;min-height:42px;max-width:270px;cursor:pointer} .ds-select:hover{border-color:var(--navy)} .ds-select:focus-visible{outline:3px solid var(--orange);outline-offset:2px}"
+    },
+    {
+      "name": "Status Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Navy status pill floating over the map; red for errors.",
+      "html": "<span class=\"ds-chip\">Pausado. Espaço continua.</span> <span class=\"ds-chip ds-chip-error\">A pista precisa fechar no círculo.</span>",
+      "css": ":host{--paper:#FFFFFF;--paper-2:#F4F7FB;--rule:#D6E0EB;--rule-2:#E8EEF5;--ink:#0B2239;--muted:#53667A;--navy:#04497D;--navy-deep:#03355C;--teal:#0E85A8;--orange:#F97A25;--orange-ink:#B8520B;--red:#C8262C;--display:\"Saira Condensed\",\"Arial Narrow\",system-ui,sans-serif;--body:Saira,system-ui,sans-serif;--ease-out:cubic-bezier(0.16,1,0.3,1)} .ds-chip{display:inline-block;background:var(--navy);color:#fff;border-radius:6px;padding:9px 14px;font:600 15px/1.3 var(--body);box-shadow:0 6px 18px -8px rgba(3,26,52,.6)} .ds-chip-error{background:var(--red)}"
+    },
+    {
+      "name": "Brand Double Rule",
+      "kind": "custom",
+      "refersTo": "",
+      "description": "Teal over orange offset strokes from the LAMIA logo; opens a sheet.",
+      "html": "<div class=\"ds-rule\"><i></i><i></i></div>",
+      "css": ".ds-rule{position:relative;height:12px;width:420px} .ds-rule i{position:absolute;height:4px;border-radius:2px} .ds-rule i:first-child{left:0;right:22%;top:0;background:#0E85A8} .ds-rule i:last-child{left:34%;right:0;top:7px;background:#F97A25}"
+    },
+    {
+      "name": "Standings Tower",
+      "kind": "card",
+      "refersTo": "",
+      "description": "Timing tower: navy top rule, hero generation numeral, clock bar, ruled standings.",
+      "html": "<aside class=\"ds-tower\"><div class=\"ds-gh\"><span>Geração</span><span>12 s de 30</span></div><div class=\"ds-gen\">14</div><div class=\"ds-clock\"><div style=\"width:40%\"></div></div><ol class=\"ds-st\"><li><button><span class=\"p p1\">1</span><i style=\"background:#F97A25\"></i><span class=\"c\">Carro 042</span><span class=\"k\">filho</span><span class=\"d\">2,4</span></button></li><li><button><span class=\"p\">2</span><i style=\"background:#fff\"></i><span class=\"c\">Carro 007</span><span class=\"k\">campeão</span><span class=\"d\">2,1</span></button></li><li class=\"out\"><button><span class=\"p\">3</span><i style=\"background:#7FD3EE\"></i><span class=\"c\">Carro 118</span><span class=\"k\">bateu</span><span class=\"d\">1,6</span></button></li></ol></aside>",
+      "css": ":host{--paper:#FFFFFF;--paper-2:#F4F7FB;--rule:#D6E0EB;--rule-2:#E8EEF5;--ink:#0B2239;--muted:#53667A;--navy:#04497D;--navy-deep:#03355C;--teal:#0E85A8;--orange:#F97A25;--orange-ink:#B8520B;--red:#C8262C;--display:\"Saira Condensed\",\"Arial Narrow\",system-ui,sans-serif;--body:Saira,system-ui,sans-serif;--ease-out:cubic-bezier(0.16,1,0.3,1)} .ds-tower{width:380px;border-top:4px solid var(--navy);padding-top:14px;font:16px/1.5 var(--body);color:var(--ink)} .ds-gh{display:flex;justify-content:space-between;color:var(--muted);font-size:15px;font-variant-numeric:tabular-nums} .ds-gen{font:800 104px/.86 var(--display);color:var(--navy);font-variant-numeric:tabular-nums;margin-top:4px} .ds-clock{height:6px;background:var(--rule-2);border-radius:3px;margin:12px 0 22px;overflow:hidden} .ds-clock div{height:100%;background:var(--orange)} .ds-st{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule)} .ds-st li{border-bottom:1px solid var(--rule-2)} .ds-st button{width:100%;display:grid;grid-template-columns:26px 22px minmax(0,1fr) auto 64px;gap:10px;align-items:center;font:inherit;color:inherit;background:none;border:0;padding:7px 4px;cursor:pointer;text-align:left} .ds-st button:hover{background:var(--paper-2)} .ds-st button:focus-visible{outline:3px solid var(--orange);outline-offset:2px} .ds-st .p{font:800 20px var(--display);color:var(--navy)} .ds-st .p1{color:var(--orange-ink)} .ds-st i{width:18px;height:9px;border-radius:2px;box-shadow:0 0 0 2px #22364D} .ds-st .c{font-weight:600;font-variant-numeric:tabular-nums} .ds-st .k{font-size:13px;color:#3C4F63} .ds-st .d{font:700 18px var(--display);text-align:right;font-variant-numeric:tabular-nums} .ds-st li.out{opacity:.55} .ds-st li.out .k{color:var(--red);font-weight:600}"
+    },
+    {
+      "name": "Bulletin",
+      "kind": "custom",
+      "refersTo": "",
+      "description": "One-line live narration between two rules, led by an orange square.",
+      "html": "<p class=\"ds-bulletin\">O carro 042 passou do recorde da geração passada.</p>",
+      "css": ":host{--paper:#FFFFFF;--paper-2:#F4F7FB;--rule:#D6E0EB;--rule-2:#E8EEF5;--ink:#0B2239;--muted:#53667A;--navy:#04497D;--navy-deep:#03355C;--teal:#0E85A8;--orange:#F97A25;--orange-ink:#B8520B;--red:#C8262C;--display:\"Saira Condensed\",\"Arial Narrow\",system-ui,sans-serif;--body:Saira,system-ui,sans-serif;--ease-out:cubic-bezier(0.16,1,0.3,1)} .ds-bulletin{display:flex;gap:12px;align-items:baseline;margin:0;padding:12px 2px;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);font:500 19px/1.5 var(--body);color:var(--ink)} .ds-bulletin::before{content:\"\";flex:none;width:10px;height:10px;border-radius:2px;background:var(--orange);transform:translateY(-2px)}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Official Timing Dossier",
+    "overview": "\n**Creative North Star: \"The Official Timing Dossier\"**\n\nThe demo is a race weekend's paperwork, not a gamer HUD. Each generation is a session with its own classification sheet; the track is the circuit map from a race programme, printed on light-blue graph paper; the standings tower is a timing screen set in heavy condensed numerals. Everything sits on white paper in LAMIA navy ink, with teal as the second ink and orange reserved for whoever is leading.\n\nDensity is split in two. The first viewport (map about two thirds wide, tower on the right, one-line bulletin under the map, presenter toolbar below) is sparse and huge so it reads from 3 m on a TV. The appendix below the fold (experiment sliders, champion vault, seed, keyboard shortcuts) is ordinary document density for the presenter only, and presentation mode hides it entirely.\n\nThe world rejects the dark neon gamer/HUD dashboard. It is light theme only, by brand commitment.",
+    "keyCharacteristics": [
+      "White paper, navy ink, ruled tables; no dark surfaces except the asphalt ribbon and the selected-car chips.",
+      "Saira Condensed 800 for every number that matters, always tabular.",
+      "The teal/orange double rule from the LAMIA logo as the signature divider.",
+      "Orange marks the leader or the fastest thing, red marks a crash or a mutation, and nothing else.",
+      "Everything scales in `vh` in presentation mode; nothing important is smaller than about 2vh there."
+    ],
+    "rules": [
+      {
+        "name": "The One Leader Rule",
+        "body": "Orange means \"best right now\". One car, P1, the clock and the bullet. If two things are orange on the map, one of them is wrong.",
+        "section": "colors"
+      },
+      {
+        "name": "The Red Is Loss Rule",
+        "body": "Red appears only where something was lost or changed by chance: a crash, an error, a kerb, a mutation. Never for emphasis.",
+        "section": "colors"
+      },
+      {
+        "name": "The Paper Only Rule",
+        "body": "Light theme only. Dark fills are limited to asphalt, the navy chip, and the elite tag.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tabular Numbers Rule",
+        "body": "Every live number (generation, timer, laps, record, car numbers, seed) sets `font-variant-numeric: tabular-nums` so the tower does not jitter while it updates.",
+        "section": "typography"
+      },
+      {
+        "name": "The Numbers Are Condensed Rule",
+        "body": "A number the audience should read goes in Saira Condensed at 700 or 800. Sentences never do.",
+        "section": "typography"
+      },
+      {
+        "name": "The Three Metres Rule",
+        "body": "In presentation mode every text size has a vh term and a floor of at least 12px; anything the audience needs is sized as a share of the screen height, not in fixed pixels.",
+        "section": "layout"
+      },
+      {
+        "name": "The Paper On Paper Rule",
+        "body": "Shadows are always navy-tinted, soft and negative-spread, and only on something laid over the page or the map. Tables, controls and the tower stay flat and use rules instead.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** set every live number in Saira Condensed 700/800 with tabular numerals.",
+      "**Do** use the brand double rule (teal over orange, offset) to open a sheet or page.",
+      "**Do** separate data with horizontal rules (rule, rule-2), with a heavier navy rule at the start of a block.",
+      "**Do** use orange-ink, not orange, when the leader's color has to be text on paper.",
+      "**Do** give every text size a vh-based clamp in presentation mode.",
+      "**Do** back every car color with a legend or a text label; color alone never identifies a role."
+    ],
+    "donts": [
+      "**Don't** use a dark background, neon glows or a HUD look; this is light theme only.",
+      "**Don't** use orange or red for emphasis, decoration or a generic call to action.",
+      "**Don't** add shadows to flat controls, tables or the tower; shadows are only for paper laid over something.",
+      "**Don't** set sentences in the condensed face or numbers in the body face.",
+      "**Don't** redefine the palette per renderer; the canvas renderers repeat the CSS hex values and must stay in sync with them."
+    ]
+  }
+}
