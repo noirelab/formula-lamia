@@ -2,6 +2,7 @@
   "name": "ia-dirige",
   "private": true,
   "license": "MIT",
+  "author": "Kaíque Medeiros Lima",
   "version": "1.0.0",
   "type": "module",
   "scripts": {
