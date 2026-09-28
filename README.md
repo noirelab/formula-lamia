@@ -133,3 +133,7 @@ scripts/    geração e validação dos circuitos F1
 - Traçados dos circuitos: [bacinger/f1-circuits](https://github.com/bacinger/f1-circuits), MIT © Tomislav Bacinger.
 - Fontes [Saira e Saira Condensed](https://fonts.google.com/specimen/Saira) (SIL Open Font License), empacotadas via Fontsource.
 - [three.js](https://threejs.org) e [Lucide](https://lucide.dev) (ícones).
+
+## Licença
+
+Código sob a licença [MIT](LICENSE): use, estude e adapte à vontade. O nome, o logo e a identidade visual do LAMIA **não** entram na licença, pois pertencem ao laboratório.
