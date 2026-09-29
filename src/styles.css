@@ -357,15 +357,28 @@ dialog.race-setup::backdrop { background: rgba(3, 26, 52, .35); }
 .race-grid h3 { font: 700 19px/1.2 var(--display); color: var(--navy); margin: 16px 0 8px; }
 .race-grid h3:first-child { margin-top: 0; }
 .stepper { display: flex; align-items: center; gap: 12px; }
-.stepper output { font: 800 56px/1 var(--display); color: var(--navy); min-width: 2ch; text-align: center; font-variant-numeric: tabular-nums; }
-.names { display: grid; gap: 6px; margin-top: 12px; font-size: 14px; font-weight: 600; }
-.names textarea, .text {
-  font: 500 16px/1.4 var(--body); color: var(--ink); border: 1.5px solid var(--rule); border-radius: 6px; padding: 10px 12px; resize: vertical; width: 100%;
+.count-input {
+  font: 800 48px/1 var(--display); color: var(--navy); width: 2.4ch; text-align: center; font-variant-numeric: tabular-nums;
+  border: 1.5px solid transparent; border-radius: 6px; background: none; padding: 0; -moz-appearance: textfield;
 }
-.names textarea:focus-visible, .text:focus-visible { outline: 3px solid var(--orange); outline-offset: 1px; }
-.chips { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; max-height: 120px; overflow: auto; }
-.chips li { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; background: var(--paper-2); border-radius: 4px; padding: 3px 8px; }
-.chips i { width: 12px; height: 12px; border-radius: 3px; box-shadow: 0 0 0 1px rgba(11, 34, 57, .25); }
+.count-input::-webkit-inner-spin-button, .count-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.count-input:hover { border-color: var(--rule); }
+.count-input:focus-visible { outline: 3px solid var(--orange); outline-offset: 1px; }
+.text {
+  font: 500 16px/1.4 var(--body); color: var(--ink); border: 1.5px solid var(--rule); border-radius: 6px; padding: 10px 12px; width: 100%;
+}
+.text:focus-visible { outline: 3px solid var(--orange); outline-offset: 1px; }
+.racers { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 4px; max-height: 46vh; overflow: auto; }
+.racers li { display: grid; grid-template-columns: 2.2ch 40px 1fr auto; align-items: center; gap: 8px; }
+.racers .no { font: 700 14px/1 var(--display); color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+.racers .text { padding: 6px 10px; }
+.racers input[type=color] {
+  width: 40px; height: 34px; padding: 0; border: none; border-radius: 6px; background: none; cursor: pointer;
+}
+.racers input[type=color]::-webkit-color-swatch-wrapper { padding: 0; }
+.racers input[type=color]::-webkit-color-swatch { border: none; border-radius: 6px; box-shadow: inset 0 0 0 1px rgba(11, 34, 57, .25); }
+.racers input[type=color]::-moz-color-swatch { border: none; border-radius: 6px; }
+.racers input[type=color]:focus-visible { outline: 3px solid var(--orange); outline-offset: 1px; }
 .options { display: grid; gap: 8px; }
 .options button {
   display: grid; gap: 2px; text-align: left; cursor: pointer; font: inherit; color: var(--ink);
@@ -483,27 +496,15 @@ dialog.race-setup::backdrop { background: rgba(3, 26, 52, .35); }
 .bc-clock strong { font: 800 2.2em/1 var(--display); font-variant-numeric: tabular-nums; }
 .bc-clock small { display: inline-flex; align-items: center; gap: .35em; font: 600 .85em/1 var(--body); color: var(--purple); }
 
-.bc-card {
-  left: 1.4vw; bottom: 3vh; display: grid; grid-template-columns: .4em auto; column-gap: .9em;
-  background: var(--bc-panel); border-radius: 8px; padding: .8em 1.1em .8em 0; font-size: clamp(13px, 1.7vh, 36px); overflow: hidden;
-}
-.bc-card .bar { grid-row: 1 / 3; }
-.bc-card .who { display: flex; align-items: baseline; gap: .5em; }
-.bc-card .who b { font: 800 2em/1 var(--display); }
-.bc-card .who span { font: 800 1.6em/1 var(--display); }
-.bc-card dl { display: flex; gap: 1.4em; margin: .45em 0 0; }
-.bc-card dt { font-size: .68em; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: rgba(255, 255, 255, .6); }
-.bc-card dd { margin: 0; font: 700 1.2em/1.2 var(--display); font-variant-numeric: tabular-nums; }
-.bc-card .purple { color: var(--purple); }
-.bc-card .gain { color: var(--gain); }
-.bc-card .loss { color: var(--loss); }
-
 .bc-banner {
-  left: 50%; bottom: 12vh; transform: translateX(-50%); display: flex; align-items: center; gap: .7em;
-  padding: .6em 1.2em; border-radius: 8px; background: var(--bc-panel); font-size: clamp(15px, 2.2vh, 44px);
+  left: 50%; bottom: calc(2.4vh + 76px); transform: translateX(-50%); display: flex; align-items: center; gap: .7em;
+  padding: .6em 1.2em; border-radius: 8px; font-size: clamp(15px, 2.2vh, 44px);
+  /* meio transparente: a corrida continua visível atrás da faixa */
+  background: rgba(3, 35, 62, .5); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .45);
   animation: bc-in .45s var(--ease-out);
 }
-.bc-banner.fastest { background: linear-gradient(90deg, #5B2A9E, #7E3FD1); }
+.bc-banner.fastest { background: linear-gradient(90deg, rgba(91, 42, 158, .55), rgba(126, 63, 209, .45)); }
 .bc-banner i { width: .45em; height: 1.4em; border-radius: 2px; }
 .bc-banner .t { font: 700 .75em/1 var(--body); letter-spacing: .1em; opacity: .85; }
 .bc-banner .n { font: 800 1.3em/1 var(--display); }
@@ -533,3 +534,67 @@ dialog.race-setup::backdrop { background: rgba(3, 26, 52, .35); }
 .laps-row .seg { margin: 0; }
 .laps-custom { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; color: var(--muted); }
 .laps-custom input { width: 5.5em; text-align: center; font-weight: 700; color: var(--navy); }
+
+.bc-clock .cam { color: rgba(255, 255, 255, .75); letter-spacing: .06em; }
+.dock .cam-pick select { width: 170px; }
+
+/* Grid de largada: gráfico de TV no painel escuro da transmissão, esperando o apresentador */
+.grid-screen {
+  position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 2.2vh;
+  padding: 4vh 4vw 11vh; font-size: clamp(13px, 1.9vh, 40px); pointer-events: none;
+  background: radial-gradient(ellipse at center, rgba(3, 26, 52, .35), rgba(3, 26, 52, .7));
+}
+.grid-screen > * { pointer-events: auto; }
+.race-tv:has(.grid-screen) .bc-tower { display: none; } /* a torre repetiria a mesma lista */
+.gs-panel {
+  width: min(92vw, 62em); max-height: 100%; overflow: auto; color: #fff;
+  background: var(--bc-panel); border-radius: 10px; box-shadow: 0 30px 80px -20px rgba(0, 0, 0, .6);
+  backdrop-filter: blur(6px); animation: gs-in .5s var(--ease-out) both;
+}
+.gs-panel header { display: flex; align-items: center; gap: .7em; padding: .7em 1.1em; background: #fff; color: var(--navy); }
+.gs-panel header img { height: 2.1em; }
+.gs-panel header strong { font: 800 1.9em/1 var(--display); text-transform: uppercase; letter-spacing: .02em; }
+.gs-panel header span { margin-left: auto; font: 700 .95em/1 var(--display); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+/* filas de dois, em ordem: 1 | 2, 3 | 4… */
+.gs-slots { list-style: none; margin: 0; padding: 1.1em 1.4em 1.3em; display: grid; grid-template-columns: 1fr 1fr; gap: .45em 1.4em; }
+.gs-slots li {
+  display: grid; grid-template-columns: 1.6em minmax(0, 1fr) auto auto; align-items: center; gap: .6em;
+  padding: .45em .8em .45em .9em; border-radius: 6px; background: rgba(255, 255, 255, .07); position: relative; overflow: hidden;
+  animation: gs-slot .45s var(--ease-out) both; animation-delay: calc(.2s + var(--k) * 30ms);
+}
+.gs-slots li::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: .32em; background: var(--c); }
+.gs-slots b { font: 800 1.35em/1 var(--display); text-align: right; font-variant-numeric: tabular-nums; color: rgba(255, 255, 255, .75); }
+.gs-slots .n { font: 700 1.15em/1 var(--display); text-transform: uppercase; letter-spacing: .03em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gs-slots .t { grid-column: 4; font: 600 .85em/1 var(--body); font-variant-numeric: tabular-nums; color: rgba(255, 255, 255, .7); }
+.gs-slots em { font: 800 .7em/1 var(--display); font-style: normal; letter-spacing: .12em; text-transform: uppercase; padding: .35em .55em; border-radius: 3px; background: var(--navy); color: #fff; }
+.gs-slots li.pole { background: #fff; color: var(--navy); }
+/* como no grid de F1: a coluna da direita larga meia caixa atrás */
+.gs-slots li:nth-child(even) { translate: 0 55%; }
+.gs-slots { padding-bottom: 2.6em; }
+.gs-slots.dense { padding-bottom: 1.6em; }
+.gs-slots li.pole b { color: var(--navy); }
+.gs-slots li.pole .t { color: var(--navy); font-weight: 700; }
+.gs-slots.dense { gap: .25em 1.2em; }
+.gs-slots.dense li { padding: .22em .7em .22em .8em; }
+.gs-slots.dense b { font-size: 1.1em; }
+.gs-slots.dense .n { font-size: 1em; }
+.gs-actions { display: flex; align-items: center; gap: 1em; animation: gs-in .5s .2s var(--ease-out) both; }
+.gs-go {
+  display: inline-flex; align-items: center; gap: .5em; font: 800 1.6em/1 var(--display); text-transform: uppercase; letter-spacing: .03em;
+  padding: .7em 1.6em; border: 0; border-radius: 8px; background: #fff; color: var(--navy); cursor: pointer;
+  box-shadow: 0 14px 36px -12px rgba(0, 0, 0, .6); transition: transform .15s var(--ease-out), background-color .15s;
+}
+.gs-go svg { width: 1em; height: 1em; fill: currentColor; }
+.gs-go:hover { background: #E8F1F8; transform: translateY(-1px); }
+.gs-go:active { transform: scale(.97); }
+.gs-go:focus-visible, .gs-redo:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
+.gs-redo {
+  display: inline-flex; align-items: center; gap: .45em; font: 700 .95em/1 var(--display); letter-spacing: .03em;
+  padding: .75em 1.1em; border: 1.5px solid rgba(255, 255, 255, .5); border-radius: 8px; background: rgba(3, 35, 62, .75); color: #fff; cursor: pointer;
+}
+.gs-redo svg { width: 1em; height: 1em; }
+.gs-redo:hover { background: rgba(3, 35, 62, .95); border-color: #fff; }
+@keyframes gs-in { from { opacity: 0; transform: translateY(12px) scale(.98); } }
+@keyframes gs-slot { from { opacity: 0; transform: translateX(-10px); } }
+@media (prefers-reduced-motion: reduce) { .gs-panel, .gs-slots li, .gs-actions { animation: none; } }
+.bc-bar button { white-space: nowrap; }

@@ -34,7 +34,7 @@ export function drawRace2D(x: CanvasRenderingContext2D, s: number, track: HTMLCa
   for (const r of race.racers) {
     if (r.penalty > 0 && blink) continue;
     const p = r.car.poseAt(alpha, tmp);
-    drawCar(x, s, p, r.color, r === lead ? 1.6 : 1.3);
+    drawCar(x, s, p, r.color, 1.3);
     // nomes só do pódio provisório (e do carro escolhido): com 30 juntos, viraria uma sopa de letras
     if (top.has(r) || r.car === selected) tags.push({ x: p.x, y: p.y - 12, racer: r, lead: r === lead && race.phase !== 'qualifying' });
   }

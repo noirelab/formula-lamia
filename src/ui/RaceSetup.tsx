@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Flag, Minus, Plus, X, Trash2, Save } from 'lucide-react';
 import { useDemo, fmt } from './useDemo';
-import { parseNames, type RaceConfig } from './demo';
-import { racerColor } from '../engine/race';
+import { MAX_RACERS, newRacer, type RaceConfig } from './demo';
 import { CIRCUITS } from '../engine/circuits';
 
 const LAPS = [3, 5, 10];
@@ -21,8 +20,29 @@ export function RaceSetup() {
     if (!d.raceSetup && dlg.open) dlg.close();
   }, [d.raceSetup]);
 
-  const typed = parseNames(cfg.names);
-  const n = Math.min(30, Math.max(cfg.count, typed.length, 1));
+  const n = cfg.racers.length;
+  const list = useRef<HTMLOListElement>(null);
+  /** Muda a quantidade: corta do fim ou completa com carros novos (cor padrão da posição). */
+  const resize = (k: number) => {
+    k = Math.min(MAX_RACERS, Math.max(1, Math.round(k) || 1));
+    set({ racers: Array.from({ length: k }, (_, i) => cfg.racers[i] ?? newRacer(i)) });
+  };
+  const edit = (i: number, p: Partial<RaceConfig['racers'][number]>) =>
+    set({ racers: cfg.racers.map((r, j) => (j === i ? { ...r, ...p } : r)) });
+  const focusName = (i: number) => {
+    const get = () => list.current?.querySelectorAll<HTMLInputElement>('input[type=text]')[i];
+    const el = get();
+    if (el) el.focus(); else setTimeout(() => get()?.focus()); // carro recém-criado: espera o React desenhar
+  };
+  /** Colar vários nomes (um por linha) num campo preenche daquele em diante, criando carros se faltar. */
+  const paste = (i: number, text: string) => {
+    const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    if (lines.length < 2) return false;
+    const racers = [...cfg.racers];
+    lines.slice(0, MAX_RACERS - i).forEach((name, k) => { racers[i + k] = { ...(racers[i + k] ?? newRacer(i + k)), name }; });
+    set({ racers });
+    return true;
+  };
   const rb = d.raceBrainFor(cfg.brain), best = d.raceBest;
   const [keepName, setKeepName] = useState('');
   const canRace = !!rb && rb.laps >= 1;
@@ -48,21 +68,33 @@ export function RaceSetup() {
           <section className="who">
             <h3>Participantes</h3>
             <div className="stepper">
-              <button type="button" className="btn icon" onClick={() => set({ count: n - 1 })} disabled={n <= Math.max(1, typed.length)}
-                aria-label="Menos um" title={typed.length > 1 ? 'Para ter menos, apague nomes da lista' : undefined}><Minus aria-hidden /></button>
-              <output aria-live="polite">{n}</output>
-              <button type="button" className="btn icon" onClick={() => set({ count: Math.min(30, n + 1) })} disabled={n >= 30} aria-label="Mais um"><Plus aria-hidden /></button>
+              <button type="button" className="btn icon" onClick={() => resize(n - 1)} disabled={n <= 1} aria-label="Menos um"><Minus aria-hidden /></button>
+              <input type="number" className="count-input" min={1} max={MAX_RACERS} value={n} aria-label="Quantidade de participantes"
+                onChange={(e) => { if (e.target.value !== '') resize(+e.target.value); }} onFocus={(e) => e.target.select()} />
+              <button type="button" className="btn icon" onClick={() => resize(n + 1)} disabled={n >= MAX_RACERS} aria-label="Mais um"><Plus aria-hidden /></button>
+              <span className="hint">até {MAX_RACERS}</span>
             </div>
-            <label className="names">
-              <span>Nomes (opcional, um por linha)</span>
-              <textarea rows={7} value={cfg.names} placeholder={'Ana\nBruno\nCarla'} spellCheck={false}
-                onChange={(e) => set({ names: e.target.value })} />
-            </label>
-            <ul className="chips" aria-label="Carros">
-              {Array.from({ length: n }, (_, i) => (
-                <li key={i}><i style={{ background: racerColor(i) }} />{typed[i] ?? `Carro ${i + 1}`}</li>
+            <ol className="racers" ref={list} aria-label="Carros">
+              {cfg.racers.map((r, i) => (
+                <li key={i}>
+                  <span className="no">{i + 1}</span>
+                  <input type="color" value={r.color} onChange={(e) => edit(i, { color: e.target.value })} aria-label={`Cor do carro ${i + 1}`} />
+                  <input type="text" className="text" value={r.name} placeholder={`Carro ${i + 1}`} maxLength={24} spellCheck={false}
+                    aria-label={`Nome do carro ${i + 1}`}
+                    onChange={(e) => edit(i, { name: e.target.value })}
+                    onPaste={(e) => { if (paste(i, e.clipboardData.getData('text'))) e.preventDefault(); }}
+                    onKeyDown={(e) => {
+                      if (e.key !== 'Enter') return;
+                      e.preventDefault(); // Enter vai para o próximo nome, criando um carro no fim
+                      if (i === n - 1 && n < MAX_RACERS) resize(n + 1);
+                      focusName(i + 1);
+                    }} />
+                  <button type="button" className="btn icon quiet" disabled={n <= 1} aria-label={`Tirar ${r.name || `carro ${i + 1}`}`}
+                    onClick={() => set({ racers: cfg.racers.filter((_, j) => j !== i) })}><X aria-hidden /></button>
+                </li>
               ))}
-            </ul>
+            </ol>
+            <p className="hint">Enter pula para o próximo nome. Colar uma lista (um nome por linha) preenche vários de uma vez.</p>
           </section>
 
           <section className="how">

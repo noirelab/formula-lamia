@@ -41,6 +41,7 @@ Uma "roleta" com carros: de 1 a 30 participantes, cada um com nome e cor própri
 - **Cérebro:** o padrão é o melhor treinado até agora. Na folha dá para **guardar cérebros com nome** (ficam no computador) e escolher um deles para correr; cada um mostra quantas voltas faz na pista atual.
 - **3, 5, 10 ou qualquer número de voltas** (1 a 99). Quem sai da pista volta parado, com 1 s de penalidade. Os carros não batem entre si.
 - **Tela cheia da corrida:** ao clicar em Largar, a corrida já abre em tela cheia e em 1×. T ou Esc saem e voltam. É uma transmissão estilo F1, com torre de posições (diferença para o líder alternando com intervalo), posições ganhas e perdidas desde a largada, relógio da prova, volta mais rápida em roxo, cartão do piloto em destaque (última volta, melhor volta, posição de largada, saídas de pista) e faixas de volta. Clique num nome da torre para a câmera seguir o carro.
+- **Câmeras:** a corrida começa seguindo quem está em P1. Quando o líder muda (e se mantém à frente por 0,8 s), a câmera desliza suave até o novo carro, sem corte. Também dá para ver do helicóptero, bem alto, circulando o líder.
 - **Bandeirada:** pódio com o prêmio ("Ana ganhou um bombom!"), **Correr de novo** com sorte nova e os mesmos nomes, ou **Nova corrida**.
 
 ### Explicar a evolução (tecla E)
@@ -78,7 +79,7 @@ Para repetir uma execução boa, abra `index.html?seed=NÚMERO&pista=ID` (por ex
 | **T** | tela cheia da corrida, com gráficos de TV (Esc sai) |
 | **E** | explicar a evolução (→ ← passam os slides, Esc fecha) |
 | **G** | comparar gerações |
-| **C** | câmera seguindo o líder (ou o carro escolhido) |
+| **C** | troca de câmera: Seguir o líder → Helicóptero → Geral |
 | **V** | vista 2D ou maquete 3D |
 | **N** | próxima pista, mantendo os cérebros |
 | **F** | tela cheia para a TV (Esc sai) |
@@ -147,6 +148,7 @@ scripts/    geração e validação dos circuitos F1
 
 - **LAMIA · Machine Learning for Industry**: identidade visual e logo.
 - Traçados dos circuitos: [bacinger/f1-circuits](https://github.com/bacinger/f1-circuits), MIT © Tomislav Bacinger.
+- Modelo 3D do carro: ["( FREE ) Formula One LP-830 SDC"](https://sketchfab.com/3d-models/free-formula-one-lp-830-sdc-aeebdfa53e294e0390f3c2e8bbfe31b6), de [SDC PERFORMANCE](https://sketchfab.com/3Duae), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Alterado: logos e pintura removidos, malha simplificada para 11,6 mil triângulos, escala e orientação ajustadas.
 - Fontes [Saira e Saira Condensed](https://fonts.google.com/specimen/Saira) (SIL Open Font License), empacotadas via Fontsource.
 - [three.js](https://threejs.org) e [Lucide](https://lucide.dev) (ícones).
 

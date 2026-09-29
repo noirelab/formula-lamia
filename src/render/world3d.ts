@@ -13,6 +13,7 @@ import { carParts } from './carModel';
 import { LEADER, ELITE_COLOR, CHILD, NAVY } from './worldRenderer';
 
 const MAX_CARS = 320; // população vai até 300
+const GHOST_OPACITY = 0.4; // pelotão translúcido: líder e carro em foco se destacam
 const TILT = (52 * Math.PI) / 180; // inclinação da câmera em relação ao chão
 
 /** O que desenhar: a pista, os carros, quem lidera e a cor de cada um. */
@@ -23,9 +24,14 @@ export interface Scene3D {
   color: (c: Car) => string;
   key: number | string; // muda quando os carros são outros (nova geração, nova corrida)
   sensors: boolean;
+  translucent: boolean; // true = só líder e carro em foco sólidos, o resto translúcido
+  followLeader?: boolean; // câmera troca de carro sempre que muda o líder (corrida)
 }
 
-export type CameraMode = 'overview' | 'chase';
+/** Seguir o líder (atrás e acima), helicóptero (bem alto, circulando) ou a maquete inteira. */
+export type CameraMode = 'chase' | 'heli' | 'overview';
+
+export const CAMERA_LABEL: Record<CameraMode, string> = { chase: 'Seguir o líder', heli: 'Helicóptero', overview: 'Geral' };
 
 /** Faixa vertical ao longo de uma linha fechada, com cor alternando a cada `seg` pontos. */
 function barrier(center: [number, number][], offset: number, height: number, seg: number, a: THREE.Color, b: THREE.Color) {
@@ -50,9 +56,16 @@ export class World3D {
   readonly renderer: THREE.WebGLRenderer;
   private scene = new THREE.Scene();
   private camera = new THREE.PerspectiveCamera(32, WORLD_W / WORLD_H, 10, 6000);
-  private cars: THREE.InstancedMesh; // carroceria: cor por instância
-  private carParts: THREE.InstancedMesh[]; // todas as peças, mesma matriz por carro
+  // Dois lotes das mesmas peças (a 0 é a carroceria, com cor por instância; as outras seguem a mesma
+  // matriz): sólidos e translúcidos (ver Scene3D.translucent).
+  private solid: THREE.InstancedMesh[];
+  private ghost: THREE.InstancedMesh[];
   camera3d: CameraMode = 'overview';
+  private orbit = Math.random() * Math.PI * 2; // ângulo do helicóptero em volta do carro
+  private lastFocus: Car | null = null;
+  private glideT = 1; // 0..1: progresso do deslize até um carro novo (1 = sem deslize)
+  private pendingLead: Car | null = null;
+  private leadSince = 0;
   private overview = { pos: new THREE.Vector3(), look: new THREE.Vector3() };
   private camPos = new THREE.Vector3();
   private camLook = new THREE.Vector3();
@@ -104,14 +117,18 @@ export class World3D {
     ground.receiveShadow = true;
     this.scene.add(base, ground, this.trackGroup);
 
-    this.carParts = carParts().map((p) => new THREE.InstancedMesh(p.geometry, p.material, MAX_CARS));
-    this.cars = this.carParts[0];
-    for (const m of this.carParts) {
-      m.castShadow = true;
+    const parts = carParts();
+    const fleet = (max: number, ghost: boolean) => parts.map((p) => {
+      const mat = ghost ? Object.assign(p.material.clone(), { transparent: true, opacity: GHOST_OPACITY }) : p.material;
+      const m = new THREE.InstancedMesh(p.geometry, mat, max);
+      m.castShadow = !ghost;
       m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
       m.frustumCulled = false;
       this.scene.add(m);
-    }
+      return m;
+    });
+    this.solid = fleet(MAX_CARS, false);
+    this.ghost = fleet(MAX_CARS, true);
 
     this.sensors = new THREE.LineSegments(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: LEADER, transparent: true, opacity: 0.9, depthTest: false }));
     this.sensors.renderOrder = 10; // sempre por cima dos carros e das barreiras
@@ -182,12 +199,12 @@ export class World3D {
     this.camera.updateProjectionMatrix();
   }
 
-  private place(i: number, c: Car, color: string, size: number) {
+  private place(fleet: THREE.InstancedMesh[], i: number, c: Car, color: string, size: number) {
     const p = c.poseAt(this.alpha, this.pose);
     this.q.setFromAxisAngle(this.up, -p.a);
     this.m.compose(this.v.set(p.x, 0, p.y), this.q, this.s.setScalar(size));
-    for (const part of this.carParts) part.setMatrixAt(i, this.m);
-    this.cars.setColorAt(i, this.color.set(color));
+    for (const part of fleet) part.setMatrixAt(i, this.m);
+    fleet[0].setColorAt(i, this.color.set(color));
   }
 
   /** `alpha`: fração do passo atual já decorrida (0..1), para mover os carros sem saltos. */
@@ -195,7 +212,7 @@ export class World3D {
   render(sim: Simulation, selected: Car | null, dt: number, alpha: number) {
     const leader = sim.leader;
     this.renderScene({
-      track: sim.track, cars: sim.cars, leader, key: sim.gen, sensors: true,
+      track: sim.track, cars: sim.cars, leader, key: sim.gen, sensors: true, translucent: true,
       color: (c) => (c === leader ? LEADER : c.kind === 'elite' ? ELITE_COLOR : CHILD),
     }, selected, dt, alpha);
   }
@@ -204,14 +221,18 @@ export class World3D {
     this.alpha = alpha;
     if (this.track !== scene.track) this.setTrack(scene.track);
     const { leader } = scene, focus = selected ?? leader;
-    let n = 0;
+    let n = 0, g = 0;
     for (const c of scene.cars) {
-      if (!c.alive || n >= MAX_CARS) continue;
+      if (!c.alive) continue;
+      // todos do mesmo tamanho (maior que no 2D: a perspectiva encolhe); o destaque vem da cor e da opacidade
       const big = c === leader || c === focus;
-      this.place(n++, c, scene.color(c), big ? 1.8 : 1.3); // maior que no 2D: a perspectiva encolhe
+      if (big || !scene.translucent) { if (n < MAX_CARS) this.place(this.solid, n++, c, scene.color(c), 1.3); }
+      else if (g < MAX_CARS) this.place(this.ghost, g++, c, scene.color(c), 1.3);
     }
-    for (const part of this.carParts) { part.count = n; part.instanceMatrix.needsUpdate = true; }
-    if (this.cars.instanceColor) this.cars.instanceColor.needsUpdate = true;
+    for (const [fleet, count] of [[this.solid, n], [this.ghost, g]] as const) {
+      for (const part of fleet) { part.count = count; part.instanceMatrix.needsUpdate = true; }
+      if (fleet[0].instanceColor) fleet[0].instanceColor.needsUpdate = true;
+    }
 
     // Sensores do carro em destaque
     const pos = this.sensors.geometry.getAttribute('position') as THREE.BufferAttribute;
@@ -239,7 +260,8 @@ export class World3D {
     this.ring.visible = !!selected;
     if (selected) { const p = selected.poseAt(alpha, this.pose); this.ring.position.set(p.x, 0.6, p.y); }
 
-    this.moveCamera(this.chaseTarget(scene, selected), dt);
+    const fc = this.chaseTarget(scene, selected);
+    this.moveCamera(fc, dt);
     this.renderer.render(this.scene, this.camera);
   }
 
@@ -254,6 +276,18 @@ export class World3D {
   /** Carro seguido: o escolhido, ou o líder, mas sem trocar a cada ultrapassagem entre empatados. */
   private chaseTarget(scene: Scene3D, selected: Car | null): Car | null {
     if (selected) return selected;
+    if (scene.followLeader) {
+      // corrida: segue quem está em P1; troca quando o novo líder se mantém à frente por 0,8 s
+      // (líderes separados por centésimos trocariam várias vezes por segundo)
+      const now = performance.now(), lead = scene.leader;
+      if (!this.chaseCar || this.chaseGen !== scene.key || !scene.cars.includes(this.chaseCar)) {
+        this.chaseCar = lead; this.chaseGen = scene.key; this.leadSince = now; this.pendingLead = lead;
+      } else if (lead !== this.chaseCar) {
+        if (lead !== this.pendingLead) { this.pendingLead = lead; this.leadSince = now; }
+        else if (now - this.leadSince > 800) this.chaseCar = lead;
+      } else this.pendingLead = lead;
+      return this.chaseCar;
+    }
     const { leader } = scene, c = this.chaseCar;
     const stale = !c || !c.alive || this.chaseGen !== scene.key || (leader && leader.best > c.best + 25);
     if (stale) { this.chaseCar = leader; this.chaseGen = scene.key; }
@@ -262,27 +296,43 @@ export class World3D {
 
   /** Visão geral fixa, ou atrás e acima do carro em destaque, com suavização. */
   private moveCamera(focus: Car | null, dt: number) {
+    const mode = this.camera3d;
+    // Trocou o carro seguido: em vez de cortar, a câmera desliza até o novo em ~1,2 s (acelera e freia suave).
+    if (focus !== this.lastFocus) { if (this.lastFocus && focus && this.camReady) this.glideT = 0; this.lastFocus = focus; }
+    this.glideT = Math.min(1, this.glideT + dt / 1.2);
+    const glide = this.glideT < 1 ? this.glideT * this.glideT * (3 - 2 * this.glideT) : 1; // smoothstep
+
     const targetPos = this.v, targetLook = this.s;
-    if (this.camera3d === 'chase' && focus) {
+    if ((mode === 'chase' || mode === 'heli') && focus) {
       const f = focus.poseAt(this.alpha, this.pose);
-      // suaviza a direção para a câmera não tremer com o volante
+      // rumo suavizado: a rede corrige o volante o tempo todo, e a câmera presa a ele tremeria junto
       let d = f.a - this.chaseAngle;
       d = Math.atan2(Math.sin(d), Math.cos(d));
-      this.chaseAngle += d * (1 - Math.exp(-dt * 6));
+      this.chaseAngle += d * (1 - Math.exp(-dt * (mode === 'chase' ? 4 : 2)));
       const cs = Math.cos(this.chaseAngle), sn = Math.sin(this.chaseAngle);
-      targetPos.set(f.x - cs * 140, 85, f.y - sn * 140);
-      targetLook.set(f.x + cs * 40, 0, f.y + sn * 40);
+      if (mode === 'chase') {
+        targetPos.set(f.x - cs * 140, 85, f.y - sn * 140);
+        targetLook.set(f.x + cs * 40, 0, f.y + sn * 40);
+      } else {
+        this.orbit += dt * 0.12;
+        targetPos.set(f.x + Math.cos(this.orbit) * 190, 170, f.y + Math.sin(this.orbit) * 190);
+        targetLook.set(f.x, 0, f.y);
+      }
     } else {
       targetPos.copy(this.overview.pos); targetLook.copy(this.overview.look);
       if (focus) this.chaseAngle = focus.a;
     }
-    // o carro anda ~480 unidades/s em 1×: a câmera precisa acompanhar rápido
-    const k = this.camReady ? 1 - Math.exp(-dt * (this.camera3d === "chase" ? 10 : 4)) : 1;
+    // Seguindo um carro: acompanha rápido (ele anda ~480 unidades/s em 1×); durante o deslize entre carros,
+    // começa devagar e vai apertando, para a câmera viajar pela pista sem salto.
+    const rate = mode === 'overview' ? 4 : 9 * (0.15 + 0.85 * glide);
+    const k = this.camReady ? 1 - Math.exp(-dt * rate) : 1;
     this.camPos.lerp(targetPos, k); this.camLook.lerp(targetLook, k);
     this.camReady = true;
     this.camera.position.copy(this.camPos);
     this.camera.lookAt(this.camLook);
   }
+
+  get shotLabel(): string { return CAMERA_LABEL[this.camera3d]; }
 
   /** Ponto do mundo sob o cursor (para clicar num carro), ou null fora do chão. */
   toWorld(clientX: number, clientY: number): [number, number] | null {

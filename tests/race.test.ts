@@ -44,6 +44,15 @@ describe('corrida', () => {
     byQual.forEach((x, i) => expect(x.grid).toBe(i));
   });
 
+  it('com holdGrid, o grid só acende as luzes depois de release()', () => {
+    const r = new Race({ ...base, names: names(4), laps: 1, start: 'grid', seed: 9, holdGrid: true });
+    while (r.phase === 'qualifying') r.step();
+    for (let i = 0; i < 2000; i++) r.step();
+    expect(r.phase).toBe('grid');
+    r.release(); r.step();
+    expect(r.phase).toBe('lights');
+  });
+
   it('mesma seed, mesma corrida', () => {
     const a = runToEnd(new Race({ ...base, names: names(5), laps: 2, start: 'single', seed: 42 }));
     const b = runToEnd(new Race({ ...base, names: names(5), laps: 2, start: 'single', seed: 42 }));

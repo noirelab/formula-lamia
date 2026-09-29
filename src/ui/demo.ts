@@ -1,7 +1,7 @@
 // Controlador da demo: dono da simulação, do laço de animação e dos canvas.
 // O React só lê o estado daqui (via subscribe) e chama as ações.
 import { Simulation, GhostRace, bestChampion, lapsOn } from '../engine/simulation';
-import { Race, type StartMode, type Racer } from '../engine/race';
+import { Race, racerColor, type StartMode, type Racer } from '../engine/race';
 import type { Brain } from '../engine/car';
 import type { Car } from '../engine/car';
 import { centerlineFromDrawing, circuitCenter, type Point, type Track } from '../engine/track';
@@ -15,15 +15,17 @@ import { PARENT_FRACTION, PARENT_MIN } from '../engine/params';
 import { drawBrain, type Palette } from '../render/brainRenderer';
 import { drawChart } from '../render/chartRenderer';
 import { World3D } from '../render/world3d';
+import type { CameraMode } from '../render/world3d';
 import { drawRace2D, drawTags, type Tag } from '../render/raceRenderer';
 import { loadSaved, store, download, parseBrain, loadLibrary, storeLibrary, LIBRARY_MAX, type SavedBrain, type LibraryBrain } from './champion';
+
+export const CAMERA_ORDER: CameraMode[] = ['chase', 'heli', 'overview'];
 
 export type Mode = 'train' | 'ghosts' | 'draw' | 'race';
 
 /** O que o apresentador escolheu na folha "Corrida". */
 export interface RaceConfig {
-  count: number; // participantes, 1 a 30
-  names: string; // um por linha (opcional)
+  racers: { name: string; color: string }[]; // 1 a 30; nome vazio = "Carro N"
   laps: number;
   start: StartMode;
   brain: string; // 'best' = melhor até agora; senão, id de um cérebro da biblioteca
@@ -35,7 +37,8 @@ export interface RaceBrain { genome: Float32Array; brain: Brain; gen: number; la
 
 const brainOf = (b: SavedBrain): Brain => ({ layers: layersFor(b.sensors), angles: sensorAngles(b.sensors) });
 
-export const parseNames = (text: string) => text.split('\n').map((l) => l.trim()).filter(Boolean).slice(0, 30);
+export const MAX_RACERS = 30;
+export const newRacer = (i: number) => ({ name: '', color: racerColor(i) });
 
 const fmt = (n: number) => n.toLocaleString('pt-BR', { maximumFractionDigits: 1 });
 
@@ -302,20 +305,20 @@ export class Demo {
     const byCar = new Map(race.racers.map((r) => [r.car, r] as const));
     const shown = race.racers.filter((r) => !(r.penalty > 0 && blink));
     this.gl!.renderScene({
-      track: this.sim.track, cars: shown.map((r) => r.car), leader: lead.car, key: `race-${race.seed}`, sensors: false,
+      track: this.sim.track, cars: shown.map((r) => r.car), leader: lead.car, key: `race-${race.seed}`, sensors: false, translucent: false, followLeader: race.phase === 'racing' || race.phase === 'finished',
       color: (c) => byCar.get(c)!.color,
     }, this.selected, this.dt, this.alpha);
     // nomes por cima do 3D, no canvas 2D transparente
     x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(0, 0, x.canvas.width, x.canvas.height);
     x.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
-    const tags: Tag[] = [], pose = { x: 0, y: 0, a: 0 }, chase = this.gl!.camera3d === 'chase';
+    const tags: Tag[] = [], pose = { x: 0, y: 0, a: 0 }, chase = this.gl!.camera3d !== 'overview';
     const top = new Set(race.standings().slice(0, 3));
     for (const r of shown) {
       if (!chase && !top.has(r) && r.car !== this.selected) continue; // visão geral: só o pódio provisório
       const p = r.car.poseAt(this.alpha, pose), q = this.gl!.project(p.x, p.y, 14);
       if (q) tags.push({ x: q[0], y: q[1], racer: r, lead: r === lead && race.phase !== 'qualifying' });
     }
-    drawTags(x, tags, this.gl!.camera3d === 'chase' ? 15 : 12);
+    drawTags(x, tags, chase ? 15 : 12);
   }
 
   /** Fração do próximo passo já decorrida: a tela desenha entre dois passos. */
@@ -543,7 +546,7 @@ export class Demo {
   posMemo = new Map<number, { pos: number; dir: 1 | -1 | 0; at: number; cand: number; since: number }>();
   raceSetup = false; // folha "Corrida" aberta
   raceBest: RaceBrain | null = null;
-  raceConfig: RaceConfig = { count: 10, names: '', laps: 10, start: 'grid', brain: 'best', prize: 'um bombom' };
+  raceConfig: RaceConfig = { racers: Array.from({ length: 10 }, (_, i) => newRacer(i)), laps: 10, start: 'grid', brain: 'best', prize: 'um bombom' };
 
   /** Abre a folha e avalia o melhor cérebro nesta pista (roda cada campeão uma vez, sem desenhar). */
   openRaceSetup() {
@@ -577,13 +580,13 @@ export class Demo {
     if (!rb) return;
     cfg = { ...cfg, laps: Math.min(99, Math.max(1, Math.round(cfg.laps) || 1)) }; // valor digitado: sempre 1 a 99
     this.raceConfig = cfg;
-    const typed = parseNames(cfg.names), n = Math.min(30, Math.max(cfg.count, typed.length, 1));
-    const names = Array.from({ length: n }, (_, i) => typed[i] ?? `Carro ${i + 1}`);
+    const names = cfg.racers.map((r, i) => r.name.trim() || `Carro ${i + 1}`), colors = cfg.racers.map((r) => r.color);
     this.resetView();
-    this.race = new Race({ names, laps: cfg.laps, start: cfg.start, genome: rb.genome, brain: rb.brain, track: this.sim.track, seed: randomSeed() });
+    this.race = new Race({ names, colors, holdGrid: true, laps: cfg.laps, start: cfg.start, genome: rb.genome, brain: rb.brain, track: this.sim.track, seed: randomSeed() });
     this.mode = 'race'; this.owed = 0; this.paused = false;
     // corrida é para assistir: sempre em 1× e já na tela cheia com os gráficos de TV
     this.speed = 1;
+    if (this.gl) { this.view3d = true; this.gl.camera3d = 'chase'; } // já começa seguindo quem lidera
     this.toggleBroadcast(true);
     this.say(cfg.start === 'grid' ? 'Volta de classificação: quem fizer o melhor tempo larga na frente.' : 'Todos juntos na largada. Atenção às luzes…', true);
     this.changed();
@@ -599,6 +602,8 @@ export class Demo {
 
   /** Mesmos participantes, sorte nova. */
   raceAgain() { this.startRace(this.raceConfig); }
+  /** Grid formado: o apresentador libera as luzes. */
+  releaseGrid() { if (this.race?.waiting) { this.race.release(); this.paused = false; this.changed(); } }
   endRace() { this.toggleBroadcast(false); this.resetView(); this.say('De volta ao treino.', true); this.changed(); }
 
   /** Participante de um carro (na corrida). */
@@ -607,12 +612,21 @@ export class Demo {
   toggle3d() { this.view3d = !this.view3d; this.changed(); requestAnimationFrame(() => this.resize()); }
 
   /** Câmera 3D: visão geral ou seguindo o carro em destaque (líder, ou o escolhido). */
+  /** Tecla C: percorre as câmeras (Seguir o líder → Helicóptero → Geral). */
   toggleCamera() {
     if (!this.gl) return;
+    const order = CAMERA_ORDER, i = order.indexOf(this.gl.camera3d);
+    this.setCamera(order[(i + 1) % order.length]);
+  }
+
+  setCamera(mode: CameraMode) {
+    if (!this.gl) return;
+    const was = this.view3d;
     this.view3d = true;
-    this.gl.camera3d = this.gl.camera3d === 'chase' ? 'overview' : 'chase';
-    if (this.gl.camera3d === 'chase') this.say('Câmera no líder: veja o que ele "enxerga" com os sensores.', true);
+    this.gl.camera3d = mode;
+    if (mode === 'chase' && !this.race) this.say('Câmera no líder: veja o que ele "enxerga" com os sensores.', true);
     this.changed();
+    if (!was) requestAnimationFrame(() => this.resize());
   }
 
   setPresent(on: boolean) { this.present = on; this.changed(); }

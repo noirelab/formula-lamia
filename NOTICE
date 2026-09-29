@@ -6,3 +6,9 @@ not covered by this license.
 Circuit layouts in scripts/f1-circuits.geojson and src/engine/circuits.ts are
 derived from bacinger/f1-circuits, MIT License, Copyright (c) 2019-2025
 Tomislav Bacinger.
+
+The car model in src/assets/f1.glb is "( FREE ) Formula One LP-830 SDC" by
+SDC PERFORMANCE (https://sketchfab.com/3Duae), licensed under CC BY 4.0
+(https://creativecommons.org/licenses/by/4.0/). Source:
+https://sketchfab.com/3d-models/free-formula-one-lp-830-sdc-aeebdfa53e294e0390f3c2e8bbfe31b6
+Changes: livery textures and logos removed, mesh simplified, rescaled and reoriented.

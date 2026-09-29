@@ -24,6 +24,8 @@ export type RacePhase = 'qualifying' | 'grid' | 'lights' | 'racing' | 'finished'
 
 export interface RaceOptions {
   names: string[]; // um por participante (1 a 30)
+  colors?: string[]; // #rrggbb por participante; falta = racerColor(i)
+  holdGrid?: boolean; // true = depois da classificação, o grid espera release() para acender as luzes
   laps: number;
   start: StartMode;
   genome: Float32Array;
@@ -56,18 +58,18 @@ export type RaceEvent =
   | { type: 'lapTime'; racer: Racer; lap: number; time: number } // alguém completou uma volta
   | { type: 'fastest'; racer: Racer; time: number }; // nova volta mais rápida da prova
 
-/** 30 cores bem separadas: matiz pelo ângulo de ouro, alternando claro e escuro. */
+/** 30 cores bem separadas (#rrggbb): matiz pelo ângulo de ouro, alternando claro e escuro. */
 export function racerColor(i: number): string {
-  const h = Math.round((i * 137.508 + 20) % 360), l = [60, 48, 70][i % 3], s = [80, 70, 75][i % 3];
-  return `hsl(${h} ${s}% ${l}%)`;
+  const h = Math.round((i * 137.508 + 20) % 360), l = [60, 48, 70][i % 3] / 100, s = [80, 70, 75][i % 3] / 100;
+  const f = (n: number) => { const k = (n + h / 30) % 12; return l - s * Math.min(l, 1 - l) * Math.max(-1, Math.min(k - 3, 9 - k, 1)); };
+  return '#' + [f(0), f(8), f(4)].map((c) => Math.round(c * 255).toString(16).padStart(2, '0')).join('');
 }
 
-/** Cor do texto sobre a cor do participante, pela luminância relativa (WCAG) do fundo. */
-export function racerInk(i: number): string {
-  const h = (i * 137.508 + 20) % 360, l = [60, 48, 70][i % 3] / 100, s = [80, 70, 75][i % 3] / 100;
-  const f = (n: number) => { const k = (n + h / 30) % 12; return l - s * Math.min(l, 1 - l) * Math.max(-1, Math.min(k - 3, 9 - k, 1)); };
+/** Cor do texto sobre uma cor #rrggbb, pela luminância relativa (WCAG) do fundo. */
+export function racerInk(color: string): string {
+  const c = [1, 3, 5].map((k) => parseInt(color.slice(k, k + 2), 16) / 255);
   const lin = (c: number) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
-  const Y = 0.2126 * lin(f(0)) + 0.7152 * lin(f(8)) + 0.0722 * lin(f(4));
+  const Y = 0.2126 * lin(c[0]) + 0.7152 * lin(c[1]) + 0.0722 * lin(c[2]);
   // contraste com branco (1.05/(Y+.05)) vs com azul-escuro #0B2239 (Y≈0,015)
   return 1.05 / (Y + 0.05) >= (Y + 0.05) / 0.065 ? '#FFFFFF' : '#0B2239';
 }
@@ -79,6 +81,7 @@ export class Race {
   readonly seed: number;
   phase: RacePhase;
   phaseT = 0; // passos desde o começo da fase
+  waiting: boolean; // grid formado esperando o apresentador (holdGrid)
   raceT = 0; // passos desde a largada
   lightsOn = 0; // 0 a 5 luzes vermelhas acesas
   events: RaceEvent[] = [];
@@ -93,15 +96,20 @@ export class Race {
 
   constructor(o: RaceOptions) {
     this.laps = o.laps; this.start = o.start; this.seed = o.seed; this.track = o.track;
+    this.waiting = !!o.holdGrid;
     this.rng = createRng(o.seed);
     this.racers = o.names.map((name, i) => {
       const car = new Car(o.genome, 'elite', o.brain);
       car.id = i + 1; car.luck = { rng: this.rng, spread: RACE.luckSpread, tau: RACE.luckTau }; car.reset(o.track);
-      return { no: i + 1, name, color: racerColor(i), ink: racerInk(i), car, penalty: 0, respawns: 0, qualTime: null, grid: i, lapTimes: [], bestLap: null, finish: null };
+      const color = o.colors?.[i] ?? racerColor(i);
+      return { no: i + 1, name, color, ink: racerInk(color), car, penalty: 0, respawns: 0, qualTime: null, grid: i, lapTimes: [], bestLap: null, finish: null };
     });
     this.phase = o.start === 'grid' ? 'qualifying' : 'lights';
     if (o.start === 'single') this.formGrid();
   }
+
+  /** Libera o grid parado (holdGrid): as luzes começam a acender. */
+  release() { this.waiting = false; }
 
   private setPhase(p: RacePhase) { this.phase = p; this.phaseT = 0; this.events.push({ type: 'phase', phase: p }); }
 
@@ -155,7 +163,7 @@ export class Race {
       }
       if (this.racers.every((r) => r.qualTime !== null) || t >= RACE.qualLimit) { this.formGrid(); this.setPhase('grid'); }
     } else if (this.phase === 'grid') {
-      if (t >= RACE.gridHold) this.setPhase('lights');
+      if (!this.waiting && t >= RACE.gridHold) this.setPhase('lights');
     } else if (this.phase === 'lights') {
       this.lightsOn = Math.min(5, Math.floor(t / RACE.lightStep));
       if (t >= this.lightsOutAt) { this.lightsOn = 0; this.setPhase('racing'); }

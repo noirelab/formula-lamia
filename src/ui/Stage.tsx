@@ -1,5 +1,7 @@
 import { useDemo, worldRef, glRef } from './useDemo';
-import { Tv, Pause, Play, RotateCcw, SkipForward, PenLine, Layers, Presentation, Video } from 'lucide-react';
+import { CAMERA_ORDER } from './demo';
+import { CAMERA_LABEL, type CameraMode } from '../render/world3d';
+import { Tv, Pause, Play, RotateCcw, SkipForward, PenLine, Layers, Presentation } from 'lucide-react';
 import { CIRCUITS } from '../engine/circuits';
 import { RaceOverlay } from './RaceOverlay';
 import { LEADER, ELITE_COLOR, CHILD, ghostColor } from '../render/worldRenderer';
@@ -107,7 +109,6 @@ export function Stage() {
 /** Controles do apresentador, agrupados por assunto: corrida, pista, câmera, explicar. */
 function Dock() {
   const d = useDemo();
-  const chase = d.gl?.camera3d === 'chase';
   return (
     <div className="dock" role="toolbar" aria-label="Controles do apresentador">
       <div className="group" role="group" aria-labelledby="g-run">
@@ -147,9 +148,12 @@ function Dock() {
             <button aria-pressed={!d.view3d} onClick={() => d.view3d && d.toggle3d()} title="Tecla V">2D</button>
             <button aria-pressed={d.view3d} onClick={() => !d.view3d && d.toggle3d()} disabled={!d.gl} title="Tecla V">3D</button>
           </div>
-          <button className="btn" aria-pressed={chase} onClick={() => d.toggleCamera()} disabled={!d.gl || !d.view3d} title="Tecla C">
-            <Video aria-hidden /> Seguir o líder
-          </button>
+          <label className="pick cam-pick">
+            <span className="sr">Câmera</span>
+            <select value={d.gl?.camera3d ?? 'overview'} disabled={!d.gl || !d.view3d} onChange={(e) => d.setCamera(e.target.value as CameraMode)} title="Tecla C">
+              {CAMERA_ORDER.map((m) => <option key={m} value={m}>{CAMERA_LABEL[m]}</option>)}
+            </select>
+          </label>
         </div>
       </div>
     </div>

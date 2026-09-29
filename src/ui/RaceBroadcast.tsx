@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { ChevronUp, ChevronDown, Minus, Timer, Video, Pause, Play, RotateCcw, Flag, Minimize } from 'lucide-react';
 import { useDemo } from './useDemo';
+import { CAMERA_ORDER } from './demo';
+import { CAMERA_LABEL } from '../render/world3d';
 import { STEPS_PER_SECOND } from '../engine/params';
 import type { Race, Racer } from '../engine/race';
 import logo from '../assets/lamia-icon.webp';
@@ -29,7 +31,6 @@ export function RaceBroadcast() {
   // alterna entre diferença para o líder e intervalo para o da frente a cada 8 s, como na TV
   const interval = racing && Math.floor(race.raceT / (8 * STEPS_PER_SECOND)) % 2 === 1;
   const focus = (d.selected && race.racers.find((r) => r.car === d.selected)) || st[0];
-  const pos = st.indexOf(focus);
   const header = { qualifying: 'CLASSIFICAÇÃO', grid: 'GRID', lights: 'GRID', racing: `VOLTA ${race.lap}/${race.laps}`, finished: 'BANDEIRADA' }[race.phase];
   const banner = d.banner && now - d.banner.at < 4500 ? d.banner : null;
 
@@ -73,22 +74,9 @@ export function RaceBroadcast() {
         <span>{d.sim.track.name.toLocaleUpperCase('pt-BR')}</span>
         <strong>{racing ? clock(race.raceT / STEPS_PER_SECOND) : race.phase === 'qualifying' ? clock(race.phaseT / STEPS_PER_SECOND) : '0:00,0'}</strong>
         {race.fastest && <small><Timer aria-hidden /> {short(race.fastest.racer.name)} {num(race.fastest.time)} s</small>}
+        {d.view3d && d.gl && <small className="cam"><Video aria-hidden /> {d.gl.shotLabel.toLocaleUpperCase('pt-BR')}</small>}
       </section>
 
-      {race.phase === 'racing' && (
-        <section className="bc-card" aria-label={`Piloto em destaque: ${focus.name}`}>
-          <div className="bar" style={{ background: focus.color }} />
-          <div className="who"><b>P{pos + 1}</b><span>{focus.name}</span></div>
-          <dl>
-            <div><dt>Última volta</dt><dd>{focus.lapTimes.length ? `${num(focus.lapTimes[focus.lapTimes.length - 1])} s` : '—'}</dd></div>
-            <div><dt>Melhor volta</dt><dd className={race.fastest?.racer === focus ? 'purple' : ''}>{focus.bestLap !== null ? `${num(focus.bestLap)} s` : '—'}</dd></div>
-            <div><dt>Largou</dt><dd>P{focus.grid + 1}</dd></div>
-            <div><dt>Posições</dt><dd className={focus.grid - pos > 0 ? 'gain' : focus.grid - pos < 0 ? 'loss' : ''}>
-              {focus.grid - pos > 0 ? `+${focus.grid - pos}` : focus.grid - pos}</dd></div>
-            <div><dt>Saídas</dt><dd>{focus.respawns}</dd></div>
-          </dl>
-        </section>
-      )}
 
       {banner && race.phase === 'racing' && (
         <section key={banner.at} className={`bc-banner ${banner.kind}`} role="status">
@@ -117,7 +105,6 @@ function BroadcastBar() {
     window.addEventListener('pointermove', wake); window.addEventListener('keydown', wake);
     return () => { clearTimeout(timer); window.removeEventListener('pointermove', wake); window.removeEventListener('keydown', wake); };
   }, []);
-  const chase = d.gl?.camera3d === 'chase';
   return (
     <nav className={`bc-bar${shown ? '' : ' hidden'}`} aria-label="Controles da corrida" onPointerEnter={() => setShown(true)}>
       <button className="btn icon" onClick={() => d.togglePause()} aria-label={d.paused ? 'Continuar' : 'Pausar'} title="Espaço">
@@ -131,9 +118,11 @@ function BroadcastBar() {
         <button aria-pressed={!d.view3d} onClick={() => d.view3d && d.toggle3d()} title="Tecla V">2D</button>
         <button aria-pressed={d.view3d} onClick={() => !d.view3d && d.toggle3d()} disabled={!d.gl} title="Tecla V">3D</button>
       </div>
-      <button className="btn" aria-pressed={chase} onClick={() => d.toggleCamera()} disabled={!d.gl || !d.view3d} title="Tecla C">
-        <Video aria-hidden /> Seguir o líder
-      </button>
+      <div className="seg" role="group" aria-label="Câmera">
+        {CAMERA_ORDER.map((m) => (
+          <button key={m} aria-pressed={d.view3d && d.gl?.camera3d === m} onClick={() => d.setCamera(m)} disabled={!d.gl} title="Tecla C">{CAMERA_LABEL[m]}</button>
+        ))}
+      </div>
       <span className="sep" aria-hidden="true" />
       <button className="btn" onClick={() => d.raceAgain()} title="Mesmos participantes, sorte nova"><RotateCcw aria-hidden /> {race.phase === 'finished' ? 'Correr de novo' : 'Reiniciar'}</button>
       <button className="btn" onClick={() => d.endRace()}><Flag aria-hidden /> Encerrar</button>
