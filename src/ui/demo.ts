@@ -581,6 +581,9 @@ export class Demo {
     this.resetView();
     this.race = new Race({ names, laps: cfg.laps, start: cfg.start, genome: rb.genome, brain: rb.brain, track: this.sim.track, seed: randomSeed() });
     this.mode = 'race'; this.owed = 0; this.paused = false;
+    // corrida é para assistir: sempre em 1× e já na tela cheia com os gráficos de TV
+    this.speed = 1;
+    this.toggleBroadcast(true);
     this.say(cfg.start === 'grid' ? 'Volta de classificação: quem fizer o melhor tempo larga na frente.' : 'Todos juntos na largada. Atenção às luzes…', true);
     this.changed();
   }
