@@ -34,15 +34,22 @@ Na primeira geração quase todos batem. Entre a 3ª e a 6ª alguém completa a 
 
 ### Corrida entre alunos (tecla R)
 
-Uma "roleta" com carros: de 1 a 30 participantes, cada um com nome e cor próprios, **todos com o mesmo cérebro** (o melhor treinado até agora). Quem ganha é a sorte: o motor de cada carro rende entre 92% e 100%, oscilando devagar ao longo da prova. Nas 240 corridas do teste de justiça, cada participante venceu perto de 1 em N vezes.
+Uma "roleta" com carros: de 1 a 30 participantes, cada um com nome e cor próprios (Enter pula para o próximo nome; colar uma lista preenche vários de uma vez), **todos com o mesmo cérebro** (o melhor treinado até agora). Quem ganha é a sorte: o motor de cada carro rende entre 92% e 100%, oscilando devagar ao longo da prova. Nas 240 corridas do teste de justiça, cada participante venceu perto de 1 em N vezes.
 
-- **Grid com classificação:** uma volta lançada decide o grid, depois vêm as 5 luzes vermelhas.
+- **Grid com classificação:** uma volta lançada decide o grid. A tela **Grid de largada** mostra as posições e as diferenças para a pole e espera você clicar em **Iniciar corrida**; aí vêm as 5 luzes vermelhas.
 - **Largada única:** todos saem juntos do mesmo ponto.
 - **Cérebro:** o padrão é o melhor treinado até agora. Na folha dá para **guardar cérebros com nome** (ficam no computador) e escolher um deles para correr; cada um mostra quantas voltas faz na pista atual.
 - **3, 5, 10 ou qualquer número de voltas** (1 a 99). Quem sai da pista volta parado, com 1 s de penalidade. Os carros não batem entre si.
-- **Tela cheia da corrida:** ao clicar em Largar, a corrida já abre em tela cheia e em 1×. T ou Esc saem e voltam. É uma transmissão estilo F1, com torre de posições (diferença para o líder alternando com intervalo), posições ganhas e perdidas desde a largada, relógio da prova, volta mais rápida em roxo, cartão do piloto em destaque (última volta, melhor volta, posição de largada, saídas de pista) e faixas de volta. Clique num nome da torre para a câmera seguir o carro.
+- **Tela cheia da corrida:** ao clicar em Largar, a corrida já abre em tela cheia e em 1×. T ou Esc saem e voltam. É uma transmissão estilo F1, com torre de posições (diferença para o líder alternando com intervalo), posições ganhas e perdidas desde a largada, relógio da prova, volta mais rápida em roxo e faixas de volta. Clique num nome da torre para a câmera seguir o carro.
 - **Câmeras:** a corrida começa seguindo quem está em P1. Quando o líder muda (e se mantém à frente por 0,8 s), a câmera desliza suave até o novo carro, sem corte. Também dá para ver do helicóptero, bem alto, circulando o líder.
-- **Bandeirada:** pódio com o prêmio ("Ana ganhou um bombom!"), **Correr de novo** com sorte nova e os mesmos nomes, ou **Nova corrida**.
+- **Bandeirada:** resultado final com pódio e prêmio ("Ana venceu! Ganhou um bombom."), todos os outros com a diferença para o vencedor, **Correr de novo** com sorte nova e os mesmos nomes, ou **Nova corrida**.
+
+<table>
+<tr>
+<td width="50%"><img src="docs/img/corrida-grid.png" alt="Grid de largada: posições em duas colunas, pole em destaque e o botão Iniciar corrida"><br><sub><b>Grid de largada:</b> a corrida espera o apresentador clicar em Iniciar corrida.</sub></td>
+<td width="50%"><img src="docs/img/corrida-resultado.png" alt="Resultado final: pódio com os três primeiros e a classificação completa"><br><sub><b>Resultado final:</b> pódio, prêmio e a diferença de cada um para o vencedor.</sub></td>
+</tr>
+</table>
 
 ### Explicar a evolução (tecla E)
 
@@ -63,7 +70,7 @@ npm test         # testes do motor, incluindo o teste de aprendizado (~20 s)
 npm run build    # dist/index.html: um arquivo só, abre com duplo clique, sem internet
 ```
 
-O build embute JavaScript, CSS, fontes e o logo num único `index.html`. Dá para levar só esse arquivo num pendrive.
+O build embute JavaScript, CSS, fontes, o logo e o modelo 3D do carro num único `index.html` (~2 MB). Dá para levar só esse arquivo num pendrive.
 
 Para repetir uma execução boa, abra `index.html?seed=NÚMERO&pista=ID` (por exemplo `?seed=3&pista=br-1940`). A seed atual aparece no **Painel** (tecla P).
 

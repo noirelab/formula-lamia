@@ -11,6 +11,7 @@ const sim = new Simulation(7, {}, circuitCenter(circuit), circuit.name);
 while (sim.history.length < gens) { while (!sim.finished) sim.step(); sim.evolve(); }
 const champ = bestChampion(sim)!;
 console.log(`${circuit.name}: campeão da geração ${champ.gen}, ${champ.laps.toFixed(2)} voltas em 30 s sem sorte`);
+if (champ.laps < 1) { console.error('O campeão ainda não completa uma volta: aumente as gerações (ex.: 20).'); process.exit(1); }
 
 function run(n: number, start: StartMode, laps: number, races: number) {
   const wins = new Array(n).fill(0), gridWins = new Array(n).fill(0);
