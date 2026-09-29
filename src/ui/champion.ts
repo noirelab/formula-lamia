@@ -28,6 +28,29 @@ export function store(b: SavedBrain) {
   try { localStorage.setItem(KEY, JSON.stringify(b)); } catch { /* sem storage: só o arquivo */ }
 }
 
+/** Cérebro na biblioteca: guardado com nome, para correr quando quiser. */
+export interface LibraryBrain extends SavedBrain { id: string; name: string; savedAt: number }
+
+const LIB_KEY = 'ia-dirige:biblioteca';
+export const LIBRARY_MAX = 20;
+
+export function loadLibrary(): LibraryBrain[] {
+  try {
+    const raw = JSON.parse(localStorage.getItem(LIB_KEY) ?? 'null');
+    if (Array.isArray(raw)) return raw.flatMap((x) => {
+      const b = parseBrain(x);
+      return b && typeof x.id === 'string' ? [{ ...b, id: x.id, name: String(x.name ?? `Geração ${b.gen}`).slice(0, 40), savedAt: Number(x.savedAt) || 0 }] : [];
+    });
+    // versão antiga: um campeão só; vira a primeira entrada da biblioteca
+    const old = loadSaved();
+    return old ? [{ ...old, id: 'antigo', name: `Geração ${old.gen}`, savedAt: 0 }] : [];
+  } catch { return []; }
+}
+
+export function storeLibrary(list: LibraryBrain[]) {
+  try { localStorage.setItem(LIB_KEY, JSON.stringify(list)); } catch { /* sem storage: só o arquivo */ }
+}
+
 export function download(b: SavedBrain) {
   const url = URL.createObjectURL(new Blob([JSON.stringify(b)], { type: 'application/json' }));
   const a = Object.assign(document.createElement('a'), { href: url, download: `cerebro-campeao-g${b.gen}.json` });

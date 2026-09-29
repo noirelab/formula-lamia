@@ -82,6 +82,7 @@ export function PresenterPanel() {
               <Flag aria-hidden /> Correr com o campeão na próxima pista
             </button>
             <button className="btn wide" onClick={() => d.saveChampion()}><Save aria-hidden /> Guardar o melhor de agora</button>
+            <p className="hint">{d.library.length ? `${d.library.length} ${d.library.length === 1 ? 'cérebro guardado' : 'cérebros guardados'}: escolha qual corre na folha Corrida (R).` : 'Os cérebros guardados aparecem na folha Corrida (R).'}</p>
             <div className="pair tight">
               <button className="btn" onClick={() => d.exportChampion()}><Download aria-hidden /> Exportar</button>
               <button className="btn" onClick={() => fileRef.current?.click()}><Upload aria-hidden /> Importar</button>

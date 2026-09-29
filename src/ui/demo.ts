@@ -1,6 +1,6 @@
 // Controlador da demo: dono da simulação, do laço de animação e dos canvas.
 // O React só lê o estado daqui (via subscribe) e chama as ações.
-import { Simulation, GhostRace, bestChampion } from '../engine/simulation';
+import { Simulation, GhostRace, bestChampion, lapsOn } from '../engine/simulation';
 import { Race, type StartMode, type Racer } from '../engine/race';
 import type { Brain } from '../engine/car';
 import type { Car } from '../engine/car';
@@ -16,7 +16,7 @@ import { drawBrain, type Palette } from '../render/brainRenderer';
 import { drawChart } from '../render/chartRenderer';
 import { World3D } from '../render/world3d';
 import { drawRace2D, drawTags, type Tag } from '../render/raceRenderer';
-import { loadSaved, store, download, parseBrain, type SavedBrain } from './champion';
+import { loadSaved, store, download, parseBrain, loadLibrary, storeLibrary, LIBRARY_MAX, type SavedBrain, type LibraryBrain } from './champion';
 
 export type Mode = 'train' | 'ghosts' | 'draw' | 'race';
 
@@ -26,12 +26,14 @@ export interface RaceConfig {
   names: string; // um por linha (opcional)
   laps: number;
   start: StartMode;
-  brain: 'best' | 'saved';
+  brain: string; // 'best' = melhor até agora; senão, id de um cérebro da biblioteca
   prize: string;
 }
 
 /** Cérebro que vai correr: o melhor até agora nesta pista, avaliado quando a folha abre. */
 export interface RaceBrain { genome: Float32Array; brain: Brain; gen: number; laps: number }
+
+const brainOf = (b: SavedBrain): Brain => ({ layers: layersFor(b.sensors), angles: sensorAngles(b.sensors) });
 
 export const parseNames = (text: string) => text.split('\n').map((l) => l.trim()).filter(Boolean).slice(0, 30);
 
@@ -80,6 +82,8 @@ export class Demo {
   drawError = '';
   drawn: Point[] | null = null; // pista desenhada esperando a escolha do visitante
   saved: SavedBrain | null = loadSaved();
+  library: LibraryBrain[] = loadLibrary(); // cérebros guardados com nome, para correr quando quiser
+  libraryLaps = new Map<string, number>(); // voltas de cada um na pista atual
   message = ''; // aviso curto no painel (salvo, arquivo inválido…)
 
   private holdUntil = 0;
@@ -458,10 +462,34 @@ export class Demo {
     return { version: 1, sensors: this.sim.settings.sensors, genome: Array.from(genome), gen: top?.gen ?? this.sim.gen, laps: +(top?.best ?? 0).toFixed(2) };
   }
 
-  saveChampion() {
-    this.saved = this.bestBrain();
-    store(this.saved);
-    this.message = `Cérebro da geração ${this.saved.gen} salvo neste computador.`;
+  saveChampion() { this.keepBrain(); }
+
+  /**
+   * Guarda na biblioteca o melhor cérebro NESTA pista (o que venceria uma corrida aqui).
+   * Também vira o "campeão guardado" do Painel.
+   */
+  keepBrain(name?: string): LibraryBrain | null {
+    const b = bestChampion(this.sim);
+    const base: SavedBrain = b
+      ? { version: 1, sensors: this.sim.settings.sensors, genome: Array.from(b.genome), gen: b.gen, laps: +b.laps.toFixed(2) }
+      : this.bestBrain();
+    const entry: LibraryBrain = {
+      ...base, id: `${Date.now().toString(36)}${Math.floor(Math.random() * 1e4)}`,
+      name: (name?.trim() || `Geração ${base.gen} · ${this.sim.track.name.split(' · ')[0]}`).slice(0, 40), savedAt: Date.now(),
+    };
+    this.library = [entry, ...this.library].slice(0, LIBRARY_MAX);
+    storeLibrary(this.library);
+    this.libraryLaps.set(entry.id, base.laps);
+    this.saved = base; store(base);
+    this.message = `"${entry.name}" guardado neste computador.`;
+    this.changed();
+    return entry;
+  }
+
+  removeBrain(id: string) {
+    this.library = this.library.filter((b) => b.id !== id);
+    storeLibrary(this.library);
+    if (this.raceConfig.brain === id) this.raceConfig = { ...this.raceConfig, brain: 'best' };
     this.changed();
   }
 
@@ -472,7 +500,9 @@ export class Demo {
     try { b = parseBrain(JSON.parse(await file.text())); } catch { /* cai no aviso abaixo */ }
     if (!b) { this.message = 'Arquivo inválido. Use um JSON exportado por esta demo.'; this.changed(); return; }
     this.saved = b; store(b);
-    this.message = `Cérebro da geração ${b.gen} carregado do arquivo.`;
+    this.library = [{ ...b, id: `arq${Date.now().toString(36)}`, name: `${file.name.replace(/\.json$/i, '').slice(0, 30)}`, savedAt: Date.now() }, ...this.library].slice(0, LIBRARY_MAX);
+    storeLibrary(this.library);
+    this.message = `Cérebro da geração ${b.gen} carregado do arquivo e guardado na biblioteca.`;
     this.runChampion(b);
   }
 
@@ -516,18 +546,25 @@ export class Demo {
     this.race = null; this.selected = null; this.deck = null; this.ghosts = null; this.mode = 'train';
     const b = bestChampion(this.sim);
     this.raceBest = b && { genome: b.genome, brain: this.sim.brain, gen: b.gen, laps: b.laps };
+    // cada cérebro guardado é testado nesta pista: pode ter sido treinado em outra
+    this.libraryLaps = new Map(this.library.map((x) => [x.id, lapsOn(Float32Array.from(x.genome), brainOf(x), this.sim.track)]));
+    if (this.raceConfig.brain !== 'best' && !this.library.some((x) => x.id === this.raceConfig.brain)) this.raceConfig = { ...this.raceConfig, brain: 'best' };
+    // ainda sem treino, mas com cérebro guardado: já vem escolhido o guardado que anda mais nesta pista
+    if (this.raceConfig.brain === 'best' && !this.raceBest && this.library.length) {
+      const top = [...this.library].sort((a, b) => (this.libraryLaps.get(b.id) ?? 0) - (this.libraryLaps.get(a.id) ?? 0))[0];
+      this.raceConfig = { ...this.raceConfig, brain: top.id };
+    }
     this.raceSetup = true;
     this.changed();
   }
   closeRaceSetup() { this.raceSetup = false; this.changed(); }
 
   /** Cérebro escolhido na folha, ou null se não houver. */
-  raceBrainFor(src: 'best' | 'saved'): RaceBrain | null {
+  raceBrainFor(src: string): RaceBrain | null {
     if (src === 'best') return this.raceBest;
-    const b = this.saved;
+    const b = this.library.find((x) => x.id === src);
     if (!b) return null;
-    const brain = { layers: layersFor(b.sensors), angles: sensorAngles(b.sensors) };
-    return { genome: Float32Array.from(b.genome), brain, gen: b.gen, laps: b.laps };
+    return { genome: Float32Array.from(b.genome), brain: brainOf(b), gen: b.gen, laps: this.libraryLaps.get(b.id) ?? b.laps };
   }
 
   startRace(cfg: RaceConfig = this.raceConfig) {

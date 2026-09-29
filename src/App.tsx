@@ -50,7 +50,7 @@ export default function App() {
   }, []);
 
   return (
-    <div className={`app${d.present ? ' present' : ''}${d.deck ? ' deck-open' : ''}${d.broadcast && d.race ? ' broadcast' : ''}`}>
+    <div className={`app${d.present ? ' present' : ''}${d.deck ? ' deck-open' : ''}${d.broadcast && d.race ? ' race-tv' : ''}`}>
       <header className="masthead">
         <img className="logo" src={logo} alt="LAMIA, Machine Learning for Industry" />
         <h1>A IA aprende a dirigir</h1>

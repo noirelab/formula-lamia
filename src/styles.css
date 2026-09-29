@@ -431,13 +431,13 @@ dialog.race-setup::backdrop { background: rgba(3, 26, 52, .35); }
 
 /* ---------- Transmissão da corrida (tela cheia, gráficos estilo TV) ---------- */
 :root { --bc-panel: rgba(3, 35, 62, .92); --bc-line: rgba(255, 255, 255, .12); --gain: #22C07A; --loss: #FF5A5F; --purple: #A66BFF; }
-.app.broadcast::before { content: ""; position: fixed; inset: 0; z-index: 39; background: var(--paper-2); }
-.app.broadcast .stage {
+.app.race-tv::before { content: ""; position: fixed; inset: 0; z-index: 39; background: var(--paper-2); }
+.app.race-tv .stage {
   position: fixed; z-index: 40; top: 0; left: 50%; transform: translateX(-50%); margin: 0;
   width: min(100vw, 100vh * 1200 / 760);
 }
-.app.broadcast .stage canvas { border-radius: 0; border: 0; box-shadow: none; }
-.app.broadcast .stage .overlay-top { display: none; }
+.app.race-tv .stage canvas { border-radius: 0; border: 0; box-shadow: none; }
+.app.race-tv .stage .overlay-top { display: none; }
 .broadcast { position: fixed; inset: 0; z-index: 45; pointer-events: none; color: #fff; font-family: var(--body); }
 .broadcast > * { pointer-events: auto; position: absolute; }
 .broadcast svg { width: 1em; height: 1em; stroke-width: 2.6; }
@@ -510,3 +510,7 @@ dialog.race-setup::backdrop { background: rgba(3, 26, 52, .35); }
 .bc-controls { right: 1.4vw; bottom: 3vh; display: flex; gap: 8px; opacity: .55; transition: opacity .2s; }
 .bc-controls:hover { opacity: 1; }
 @media (prefers-reduced-motion: reduce) { .bc-banner { animation: none; } }
+
+.kept { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px; align-items: stretch; }
+.keep-row { display: flex; gap: 8px; margin-top: 10px; }
+.keep-row .text { flex: 1; min-width: 0; }

@@ -140,13 +140,18 @@ export class Simulation {
 export function bestChampion(sim: Simulation): { gen: number; genome: Float32Array; laps: number } | null {
   let best: { gen: number; genome: Float32Array; laps: number } | null = null;
   for (const r of sim.history) {
-    const c = new Car(r.champion, 'elite', sim.brain);
-    c.reset(sim.track);
-    for (let t = 1; t <= GEN_STEPS && c.alive; t++) c.step(t, sim.track);
-    const laps = c.best / sim.track.n;
+    const laps = lapsOn(r.champion, sim.brain, sim.track);
     if (!best || laps >= best.laps) best = { gen: r.gen, genome: r.champion, laps };
   }
   return best;
+}
+
+/** Voltas que um cérebro faz em 30 s nesta pista, sem sorte (roda sem desenhar, ~1 ms). */
+export function lapsOn(genome: Float32Array, brain: Brain, track: Track): number {
+  const c = new Car(genome, 'elite', brain);
+  c.reset(track);
+  for (let t = 1; t <= GEN_STEPS && c.alive; t++) c.step(t, track);
+  return c.best / track.n;
 }
 
 export type GhostRole = 'first' | 'mid' | 'last' | 'best';

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Flag, Minus, Plus, X } from 'lucide-react';
+import { Flag, Minus, Plus, X, Trash2, Save } from 'lucide-react';
 import { useDemo, fmt } from './useDemo';
 import { parseNames, type RaceConfig } from './demo';
 import { racerColor } from '../engine/race';
@@ -22,7 +22,8 @@ export function RaceSetup() {
 
   const typed = parseNames(cfg.names);
   const n = Math.min(30, Math.max(cfg.count, typed.length, 1));
-  const rb = d.raceBrainFor(cfg.brain), best = d.raceBest, saved = d.saved;
+  const rb = d.raceBrainFor(cfg.brain), best = d.raceBest;
+  const [keepName, setKeepName] = useState('');
   const canRace = !!rb && rb.laps >= 1;
   // volta ~ 30 s / (voltas em 30 s); a 1ª sai parada, e a classificação soma mais uma volta
   const lap = rb && rb.laps > 0 ? 30 / rb.laps : 0;
@@ -94,11 +95,25 @@ export function RaceSetup() {
                 <strong>Melhor até agora</strong>
                 <span>{best ? `Geração ${best.gen}: ${fmt(best.laps)} voltas em 30 s nesta pista.` : 'Treine pelo menos uma geração.'}</span>
               </button>
-              <button type="button" role="radio" aria-checked={cfg.brain === 'saved'} onClick={() => set({ brain: 'saved' })} disabled={!saved}>
-                <strong>Campeão guardado</strong>
-                <span>{saved ? `Geração ${saved.gen}, guardado no Painel.` : 'Nenhum guardado no Painel.'}</span>
+              {d.library.map((b) => (
+                <div className="kept" key={b.id}>
+                  <button type="button" role="radio" aria-checked={cfg.brain === b.id} onClick={() => set({ brain: b.id })}>
+                    <strong>{b.name}</strong>
+                    <span>Guardado · {fmt(d.libraryLaps.get(b.id) ?? 0)} voltas em 30 s nesta pista{b.sensors !== 7 ? ` · ${b.sensors} sensores` : ''}</span>
+                  </button>
+                  <button type="button" className="btn icon quiet" onClick={() => { if (cfg.brain === b.id) set({ brain: 'best' }); d.removeBrain(b.id); }}
+                    aria-label={`Apagar ${b.name}`} title="Apagar da biblioteca"><Trash2 aria-hidden /></button>
+                </div>
+              ))}
+            </div>
+            <div className="keep-row">
+              <input className="text" value={keepName} onChange={(e) => setKeepName(e.target.value)} maxLength={40}
+                placeholder={best ? `Geração ${best.gen} · ${d.sim.track.name.split(' · ')[0]}` : 'nome do cérebro'} aria-label="Nome para guardar o cérebro" />
+              <button type="button" className="btn" disabled={!best} onClick={() => { const e = d.keepBrain(keepName); setKeepName(''); if (e) set({ brain: e.id }); }}>
+                <Save aria-hidden /> Guardar o melhor de agora
               </button>
             </div>
+            <p className="hint">Guardado fica neste computador para sempre. O padrão continua sendo o melhor treinado até agora.</p>
 
             <h3><label htmlFor="prize">Prêmio</label></h3>
             <input id="prize" className="text" value={cfg.prize} onChange={(e) => set({ prize: e.target.value })} maxLength={40} />
