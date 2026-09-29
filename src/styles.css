@@ -80,6 +80,23 @@ b, strong { font-weight: 600; }
 }
 .pick select:hover { border-color: var(--navy); }
 .pick select:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; }
+/* Lista aberta com a cara do app (select customizável do Chromium; nos outros fica o nativo) */
+@supports (appearance: base-select) {
+  .pick select, .pick ::picker(select) { appearance: base-select; }
+  .pick select { display: flex; align-items: center; gap: 8px; }
+  .pick select::picker-icon { color: var(--navy); transition: rotate .2s var(--ease-out); }
+  .pick select:open::picker-icon { rotate: 180deg; }
+  .pick ::picker(select) {
+    border: 1.5px solid var(--rule); border-radius: 8px; padding: 4px; margin: 6px 0; background: var(--paper);
+    box-shadow: 0 18px 40px -14px rgba(3, 26, 52, .45); max-height: min(60vh, 420px); overflow: auto;
+    font: 600 15px/1.1 var(--body); color: var(--navy);
+  }
+  .pick option { padding: 9px 10px; border-radius: 5px; cursor: pointer; }
+  .pick option::checkmark { color: var(--orange); }
+  .pick option:hover, .pick option:focus-visible { background: #E8F1F8; outline: none; }
+  .pick option:checked { background: var(--navy); color: #fff; }
+  .pick option:checked::checkmark { color: #fff; }
+}
 /* Barra do apresentador: grupos por assunto, separados por espaço, não por caixas */
 .dock { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px 24px; margin-top: 16px; }
 @media (max-width: 1400px) { .pick select { width: 190px; } .dock { gap: 14px 16px; } }
