@@ -1,11 +1,13 @@
 // Controlador da demo: dono da simulação, do laço de animação e dos canvas.
 // O React só lê o estado daqui (via subscribe) e chama as ações.
-import { Simulation, GhostRace } from '../engine/simulation';
+import { Simulation, GhostRace, bestChampion } from '../engine/simulation';
+import { Race, type StartMode, type Racer } from '../engine/race';
+import type { Brain } from '../engine/car';
 import type { Car } from '../engine/car';
 import { centerlineFromDrawing, circuitCenter, type Point, type Track } from '../engine/track';
 import { CIRCUITS } from '../engine/circuits';
 import { randomSeed } from '../engine/rng';
-import { WORLD_W, WORLD_H, STEPS_PER_SECOND, type SensorCount } from '../engine/params';
+import { WORLD_W, WORLD_H, STEPS_PER_SECOND, layersFor, sensorAngles, type SensorCount } from '../engine/params';
 import { renderTrack } from '../render/trackRenderer';
 import { drawWorld, drawGhosts, drawStroke } from '../render/worldRenderer';
 import { drawDeck, SLIDES, type DeckView, type Lesson } from '../render/deckRenderer';
@@ -13,9 +15,25 @@ import { PARENT_FRACTION, PARENT_MIN } from '../engine/params';
 import { drawBrain, type Palette } from '../render/brainRenderer';
 import { drawChart } from '../render/chartRenderer';
 import { World3D } from '../render/world3d';
+import { drawRace2D, drawTags, type Tag } from '../render/raceRenderer';
 import { loadSaved, store, download, parseBrain, type SavedBrain } from './champion';
 
-export type Mode = 'train' | 'ghosts' | 'draw';
+export type Mode = 'train' | 'ghosts' | 'draw' | 'race';
+
+/** O que o apresentador escolheu na folha "Corrida". */
+export interface RaceConfig {
+  count: number; // participantes, 1 a 30
+  names: string; // um por linha (opcional)
+  laps: number;
+  start: StartMode;
+  brain: 'best' | 'saved';
+  prize: string;
+}
+
+/** Cérebro que vai correr: o melhor até agora nesta pista, avaliado quando a folha abre. */
+export interface RaceBrain { genome: Float32Array; brain: Brain; gen: number; laps: number }
+
+export const parseNames = (text: string) => text.split('\n').map((l) => l.trim()).filter(Boolean).slice(0, 30);
 
 const fmt = (n: number) => n.toLocaleString('pt-BR', { maximumFractionDigits: 1 });
 
@@ -109,7 +127,7 @@ export class Demo {
   }
 
   /** 3D só no treino normal; as outras cenas são desenhadas no canvas 2D. */
-  get showing3d() { return this.view3d && !!this.gl && this.mode === 'train'; }
+  get showing3d() { return this.view3d && !!this.gl && (this.mode === 'train' || this.mode === 'race'); }
 
   resize() {
     this.dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -137,6 +155,7 @@ export class Demo {
     if (!this.paused) {
       if (this.mode === 'train') this.advanceTrain(dt);
       else if (this.mode === 'ghosts') this.advanceGhosts(dt);
+      else if (this.mode === 'race') this.advanceRace(dt);
     }
     this.readEvents();
     this.render();
@@ -179,7 +198,31 @@ export class Demo {
     for (; this.owed >= 1; this.owed--) if (g.step()) { this.ghostRest = 2; this.owed = 0; break; }
   }
 
+  private advanceRace(dt: number) {
+    const r = this.race!;
+    if (r.phase === 'finished') return;
+    this.owed = Math.min(this.owed + dt * STEPS_PER_SECOND * this.speed, this.speed * 2);
+    for (; this.owed >= 1 && (r.phase as string) !== 'finished'; this.owed--) r.step();
+  }
+
+  private readRaceEvents() {
+    const r = this.race;
+    if (!r) return;
+    for (const e of r.drainEvents()) {
+      if (e.type === 'phase') {
+        if (e.phase === 'grid') this.say(`Grid formado: ${r.standings()[0].name} larga na pole!`, true);
+        else if (e.phase === 'lights') this.say('Atenção às luzes…', true);
+        else if (e.phase === 'racing') this.say('Luzes apagadas: valendo!', true);
+        else if (e.phase === 'finished') this.say(`Fim de corrida! ${r.standings()[0].name} ganhou ${this.raceConfig.prize}!`, true);
+      } else if (e.type === 'lead') this.say(`${e.racer.name} assume a liderança!`, true);
+      else if (e.type === 'lap') this.say(e.lap === r.laps ? 'Última volta!' : `Volta ${e.lap} de ${r.laps}`, e.lap === r.laps);
+      else if (e.type === 'finish' && e.pos === 1) this.say(`${e.racer.name} recebe a bandeirada em 1º!`, true);
+      else if (e.type === 'respawn') this.say(`${e.racer.name} saiu da pista e volta com 1 s de penalidade.`);
+    }
+  }
+
   private readEvents() {
+    this.readRaceEvents();
     for (const e of this.sim.drainEvents()) {
       if (e.type === 'genStart') this.say(e.gen === 1 ? 'Os cérebros foram sorteados. Ninguém sabe dirigir ainda.' : GEN_LINES[(e.gen - 2) % GEN_LINES.length](e.gen));
       else if (e.type === 'firstLap') this.say(`Primeira volta completa na geração ${e.gen}!`, true);
@@ -200,7 +243,9 @@ export class Demo {
     if (x && x.canvas.width) {
       if (this.trackOf !== this.sim.track) { this.trackImg = renderTrack(this.sim.track, this.scale); this.trackOf = this.sim.track; }
       const s = this.scale, img = this.trackImg!;
-      if (this.mode === 'draw') drawStroke(x, s, this.stroke);
+      const blink = (this.frame >> 3) % 2 === 0; // carro em penalidade pisca
+      if (this.mode === 'race' && this.race) this.renderRace(x, s, img, blink);
+      else if (this.mode === 'draw') drawStroke(x, s, this.stroke);
       else if (this.mode === 'ghosts' && this.ghosts) drawGhosts(x, s, img, this.ghosts);
       else if (this.showing3d) { x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(0, 0, x.canvas.width, x.canvas.height); this.gl!.render(this.sim, this.selected, this.dt, this.alpha); }
       else drawWorld(x, s, img, this.sim, this.selected, this.alpha);
@@ -223,10 +268,32 @@ export class Demo {
     }
   }
 
+  private renderRace(x: CanvasRenderingContext2D, s: number, img: HTMLCanvasElement, blink: boolean) {
+    const race = this.race!, lead = race.standings()[0];
+    if (!this.showing3d) { drawRace2D(x, s, img, race, this.alpha, blink, this.selected); return; }
+    const byCar = new Map(race.racers.map((r) => [r.car, r] as const));
+    const shown = race.racers.filter((r) => !(r.penalty > 0 && blink));
+    this.gl!.renderScene({
+      track: this.sim.track, cars: shown.map((r) => r.car), leader: lead.car, key: `race-${race.seed}`, sensors: false,
+      color: (c) => byCar.get(c)!.color,
+    }, this.selected, this.dt, this.alpha);
+    // nomes por cima do 3D, no canvas 2D transparente
+    x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(0, 0, x.canvas.width, x.canvas.height);
+    x.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    const tags: Tag[] = [], pose = { x: 0, y: 0, a: 0 }, chase = this.gl!.camera3d === 'chase';
+    const top = new Set(race.standings().slice(0, 3));
+    for (const r of shown) {
+      if (!chase && !top.has(r) && r.car !== this.selected) continue; // visão geral: só o pódio provisório
+      const p = r.car.poseAt(this.alpha, pose), q = this.gl!.project(p.x, p.y, 14);
+      if (q) tags.push({ x: q[0], y: q[1], racer: r, lead: r === lead && race.phase !== 'qualifying' });
+    }
+    drawTags(x, tags, this.gl!.camera3d === 'chase' ? 15 : 12);
+  }
+
   /** Fração do próximo passo já decorrida: a tela desenha entre dois passos. */
   private get alpha() { return this.paused ? 1 : Math.min(1, this.owed); }
 
-  get focus(): Car | null { return this.selected ?? this.sim.leader; }
+  get focus(): Car | null { return this.selected ?? (this.race ? this.race.standings()[0].car : this.sim.leader); }
 
   // ---------- Ações ----------
   private changed() { this.notify(); }
@@ -252,7 +319,7 @@ export class Demo {
     this.changed();
   }
 
-  private resetView() { this.deck = null; this.selected = null; this.mode = 'train'; this.ghosts = null; this.holdUntil = 0; }
+  private resetView() { this.race = null; this.raceSetup = false; this.deck = null; this.selected = null; this.mode = 'train'; this.ghosts = null; this.holdUntil = 0; }
 
   /** Troca de pista mantendo os cérebros: próximo circuito do calendário, ou outra sorteada. */
   newTrack() {
@@ -293,12 +360,12 @@ export class Demo {
 
   /** Clique no canvas (coordenadas da tela). */
   pick(clientX: number, clientY: number) {
-    if (this.mode !== 'train' || !this.world) return;
+    if ((this.mode !== 'train' && this.mode !== 'race') || !this.world) return;
     const r = this.world.canvas.getBoundingClientRect();
     let wx = ((clientX - r.left) / r.width) * WORLD_W, wy = ((clientY - r.top) / r.height) * WORLD_H;
     if (this.showing3d) { const p = this.gl!.toWorld(clientX, clientY); if (!p) return; [wx, wy] = p; }
     let best: Car | null = null, bestD = 30 * 30; // raio generoso: dedo em tablet
-    for (const c of this.sim.cars) {
+    for (const c of this.race ? this.race.racers.map((r) => r.car) : this.sim.cars) {
       if (!c.alive) continue;
       const d = (c.x - wx) ** 2 + (c.y - wy) ** 2;
       if (d < bestD) { bestD = d; best = c; }
@@ -308,7 +375,7 @@ export class Demo {
     this.changed();
   }
 
-  selectCar(c: Car) { if (this.mode === 'train') { this.selected = c === this.selected ? null : c; if (this.selected) this.towerTab = 'brain'; this.changed(); } }
+  selectCar(c: Car) { if (this.mode === 'train' || this.mode === 'race') { this.selected = c === this.selected ? null : c; if (this.selected) this.towerTab = 'brain'; this.changed(); } }
 
   // Fantasmas
   startGhosts() {
@@ -414,6 +481,52 @@ export class Demo {
 
   panelOpen = false; // painel do apresentador (experimentos, campeão, seed)
   setPanel(open: boolean) { this.panelOpen = open; this.changed(); }
+
+  // ---------- Corrida ----------
+  race: Race | null = null;
+  raceSetup = false; // folha "Corrida" aberta
+  raceBest: RaceBrain | null = null;
+  raceConfig: RaceConfig = { count: 10, names: '', laps: 10, start: 'grid', brain: 'best', prize: 'um bombom' };
+
+  /** Abre a folha e avalia o melhor cérebro nesta pista (roda cada campeão uma vez, sem desenhar). */
+  openRaceSetup() {
+    if (this.mode === 'race' && this.race?.phase !== 'finished') return; // não interrompe uma corrida
+    this.race = null; this.selected = null; this.deck = null; this.ghosts = null; this.mode = 'train';
+    const b = bestChampion(this.sim);
+    this.raceBest = b && { genome: b.genome, brain: this.sim.brain, gen: b.gen, laps: b.laps };
+    this.raceSetup = true;
+    this.changed();
+  }
+  closeRaceSetup() { this.raceSetup = false; this.changed(); }
+
+  /** Cérebro escolhido na folha, ou null se não houver. */
+  raceBrainFor(src: 'best' | 'saved'): RaceBrain | null {
+    if (src === 'best') return this.raceBest;
+    const b = this.saved;
+    if (!b) return null;
+    const brain = { layers: layersFor(b.sensors), angles: sensorAngles(b.sensors) };
+    return { genome: Float32Array.from(b.genome), brain, gen: b.gen, laps: b.laps };
+  }
+
+  startRace(cfg: RaceConfig = this.raceConfig) {
+    const rb = this.raceBrainFor(cfg.brain);
+    if (!rb) return;
+    this.raceConfig = cfg;
+    const typed = parseNames(cfg.names), n = Math.min(30, Math.max(cfg.count, typed.length, 1));
+    const names = Array.from({ length: n }, (_, i) => typed[i] ?? `Carro ${i + 1}`);
+    this.resetView();
+    this.race = new Race({ names, laps: cfg.laps, start: cfg.start, genome: rb.genome, brain: rb.brain, track: this.sim.track, seed: randomSeed() });
+    this.mode = 'race'; this.owed = 0; this.paused = false;
+    this.say(cfg.start === 'grid' ? 'Volta de classificação: quem fizer o melhor tempo larga na frente.' : 'Todos juntos na largada. Atenção às luzes…', true);
+    this.changed();
+  }
+
+  /** Mesmos participantes, sorte nova. */
+  raceAgain() { this.startRace(this.raceConfig); }
+  endRace() { this.resetView(); this.say('De volta ao treino.', true); this.changed(); }
+
+  /** Participante de um carro (na corrida). */
+  racerOf(c: Car): Racer | undefined { return this.race?.racers.find((r) => r.car === c); }
 
   toggle3d() { this.view3d = !this.view3d; this.changed(); }
 

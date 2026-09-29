@@ -132,6 +132,23 @@ export class Simulation {
   drainEvents(): SimEvent[] { return this.events.splice(0); }
 }
 
+/**
+ * Recordista: roda cada campeão, sem desenhar, na pista ATUAL (o recorde do histórico pode ter
+ * sido feito em outra pista). Empate fica com a geração mais nova, que é a mais evoluída.
+ * `laps` = voltas que ele fez em 30 s nesta pista.
+ */
+export function bestChampion(sim: Simulation): { gen: number; genome: Float32Array; laps: number } | null {
+  let best: { gen: number; genome: Float32Array; laps: number } | null = null;
+  for (const r of sim.history) {
+    const c = new Car(r.champion, 'elite', sim.brain);
+    c.reset(sim.track);
+    for (let t = 1; t <= GEN_STEPS && c.alive; t++) c.step(t, sim.track);
+    const laps = c.best / sim.track.n;
+    if (!best || laps >= best.laps) best = { gen: r.gen, genome: r.champion, laps };
+  }
+  return best;
+}
+
 export type GhostRole = 'first' | 'mid' | 'last' | 'best';
 
 /** Fantasmas: o campeão de cada geração, da 1ª até a recordista, todos juntos na mesma pista. */
@@ -143,15 +160,7 @@ export class GhostRace {
 
   constructor(readonly sim: Simulation) {
     const h = sim.history, last = h.length;
-    // Recordista: roda cada campeão, sem desenhar, na pista ATUAL (o recorde do histórico pode ter
-    // sido feito em outra pista). Empate fica com a geração mais nova, que é a mais evoluída.
-    let best = 1, top = -Infinity;
-    for (const r of h) {
-      const c = new Car(r.champion, 'elite', sim.brain);
-      c.reset(sim.track);
-      for (let t = 1; t <= GEN_STEPS && c.alive; t++) c.step(t, sim.track);
-      if (c.best >= top) { top = c.best; best = r.gen; }
-    }
+    const best = bestChampion(sim)!.gen;
     const roleOf = (g: number): GhostRole => (g === best ? 'best' : g === 1 ? 'first' : g === last ? 'last' : 'mid');
     this.gens = Array.from({ length: best }, (_, i) => i + 1);
     this.roles = this.gens.map(roleOf);

@@ -15,6 +15,16 @@ import { LEADER, ELITE_COLOR, CHILD, NAVY } from './worldRenderer';
 const MAX_CARS = 320; // população vai até 300
 const TILT = (52 * Math.PI) / 180; // inclinação da câmera em relação ao chão
 
+/** O que desenhar: a pista, os carros, quem lidera e a cor de cada um. */
+export interface Scene3D {
+  track: Track;
+  cars: Car[];
+  leader: Car | null;
+  color: (c: Car) => string;
+  key: number | string; // muda quando os carros são outros (nova geração, nova corrida)
+  sensors: boolean;
+}
+
 export type CameraMode = 'overview' | 'chase';
 
 /** Faixa vertical ao longo de uma linha fechada, com cor alternando a cada `seg` pontos. */
@@ -51,7 +61,7 @@ export class World3D {
   private chaseCar: Car | null = null;
   private pose = { x: 0, y: 0, a: 0 };
   private alpha = 1;
-  private chaseGen = 0;
+  private chaseGen: number | string = 0;
   private groundMat = new THREE.MeshStandardMaterial({ roughness: 0.95 });
   private trackGroup = new THREE.Group();
   private sensors: THREE.LineSegments;
@@ -181,23 +191,32 @@ export class World3D {
   }
 
   /** `alpha`: fração do passo atual já decorrida (0..1), para mover os carros sem saltos. */
+  /** Treino: cor pelo papel do carro (líder laranja, campeão branco, filho azul). */
   render(sim: Simulation, selected: Car | null, dt: number, alpha: number) {
+    const leader = sim.leader;
+    this.renderScene({
+      track: sim.track, cars: sim.cars, leader, key: sim.gen, sensors: true,
+      color: (c) => (c === leader ? LEADER : c.kind === 'elite' ? ELITE_COLOR : CHILD),
+    }, selected, dt, alpha);
+  }
+
+  renderScene(scene: Scene3D, selected: Car | null, dt: number, alpha: number) {
     this.alpha = alpha;
-    if (this.track !== sim.track) this.setTrack(sim.track);
-    const leader = sim.leader, focus = selected ?? leader;
+    if (this.track !== scene.track) this.setTrack(scene.track);
+    const { leader } = scene, focus = selected ?? leader;
     let n = 0;
-    for (const c of sim.cars) {
+    for (const c of scene.cars) {
       if (!c.alive || n >= MAX_CARS) continue;
       const big = c === leader || c === focus;
-      this.place(n++, c, c === leader ? LEADER : c.kind === 'elite' ? ELITE_COLOR : CHILD, big ? 1.8 : 1.3); // maior que no 2D: a perspectiva encolhe
+      this.place(n++, c, scene.color(c), big ? 1.8 : 1.3); // maior que no 2D: a perspectiva encolhe
     }
     for (const part of this.carParts) { part.count = n; part.instanceMatrix.needsUpdate = true; }
     if (this.cars.instanceColor) this.cars.instanceColor.needsUpdate = true;
 
     // Sensores do carro em destaque
     const pos = this.sensors.geometry.getAttribute('position') as THREE.BufferAttribute;
-    this.sensors.visible = this.hits.visible = !!focus?.alive;
-    if (focus?.alive) {
+    this.sensors.visible = this.hits.visible = !!focus?.alive && scene.sensors;
+    if (focus?.alive && scene.sensors) {
       const { angles } = focus.brain, color = focus === leader ? LEADER : '#FFFFFF';
       (this.sensors.material as THREE.LineBasicMaterial).color.set(color);
       (this.hits.material as THREE.MeshBasicMaterial).color.set(color);
@@ -220,16 +239,24 @@ export class World3D {
     this.ring.visible = !!selected;
     if (selected) { const p = selected.poseAt(alpha, this.pose); this.ring.position.set(p.x, 0.6, p.y); }
 
-    this.moveCamera(this.chaseTarget(sim, selected), dt);
+    this.moveCamera(this.chaseTarget(scene, selected), dt);
     this.renderer.render(this.scene, this.camera);
   }
 
+  /** Ponto do mundo (no chão, a `h` de altura) em pixels CSS do canvas; null se atrás da câmera. */
+  project(x: number, y: number, h = 12): [number, number] | null {
+    const v = this.v.set(x, h, y).project(this.camera);
+    if (v.z > 1) return null;
+    const r = this.canvas.getBoundingClientRect();
+    return [((v.x + 1) / 2) * r.width, ((1 - v.y) / 2) * r.height];
+  }
+
   /** Carro seguido: o escolhido, ou o líder, mas sem trocar a cada ultrapassagem entre empatados. */
-  private chaseTarget(sim: Simulation, selected: Car | null): Car | null {
+  private chaseTarget(scene: Scene3D, selected: Car | null): Car | null {
     if (selected) return selected;
-    const leader = sim.leader, c = this.chaseCar;
-    const stale = !c || !c.alive || this.chaseGen !== sim.gen || (leader && leader.best > c.best + 25);
-    if (stale) { this.chaseCar = leader; this.chaseGen = sim.gen; }
+    const { leader } = scene, c = this.chaseCar;
+    const stale = !c || !c.alive || this.chaseGen !== scene.key || (leader && leader.best > c.best + 25);
+    if (stale) { this.chaseCar = leader; this.chaseGen = scene.key; }
     return this.chaseCar;
   }
 

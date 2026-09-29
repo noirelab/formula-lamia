@@ -317,7 +317,7 @@ dialog.panel::backdrop { background: rgba(3, 26, 52, .28); }
 @media (max-height: 920px) {
   .masthead .lede { display: none; }
   .masthead .logo { height: 56px; }
-  .standings li:nth-child(n + 6) { display: none; }
+  .tower:not(.race-tower) .standings li:nth-child(n + 6) { display: none; }
   .count { display: none; }
   .gen { font-size: 64px; }
   .stats b { font-size: 26px; }
@@ -328,8 +328,103 @@ dialog.panel::backdrop { background: rgba(3, 26, 52, .28); }
   .tower .hint { display: none; }
 }
 @media (max-height: 780px) {
-  .standings li:nth-child(n + 5) { display: none; }
+  .tower:not(.race-tower) .standings li:nth-child(n + 5) { display: none; }
   .gen { font-size: 52px; }
   #chart { height: 90px; }
 }
 @media (max-width: 1180px) { .app { height: auto; overflow: visible; } .stage-box { flex: none; container-type: normal; } .stage { width: 100%; } }
+
+/* ---------- Corrida ---------- */
+fieldset.group { border: 0; margin: 0; padding: 0; min-width: 0; }
+fieldset.group:disabled { opacity: .45; }
+
+/* Folha "Corrida" */
+dialog.race-setup {
+  width: min(980px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); padding: 0; border: 0; border-radius: 10px;
+  color: var(--ink); background: var(--paper); box-shadow: 0 30px 80px -24px rgba(3, 26, 52, .55);
+}
+dialog.race-setup[open] { animation: panel-in .28s var(--ease-out); }
+dialog.race-setup::backdrop { background: rgba(3, 26, 52, .35); }
+.race-body { display: flex; flex-direction: column; max-height: calc(100dvh - 32px); }
+.race-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 22px 28px 14px; border-bottom: 4px solid var(--navy); }
+.race-head h2 { font: 800 34px/1 var(--display); color: var(--navy); margin: 0 0 6px; }
+.race-head p { margin: 0; color: var(--muted); }
+.race-grid { display: grid; grid-template-columns: 1fr 1.15fr; gap: 28px; padding: 18px 28px; overflow: auto; }
+@media (max-width: 860px) { .race-grid { grid-template-columns: 1fr; } }
+.race-grid h3 { font: 700 19px/1.2 var(--display); color: var(--navy); margin: 16px 0 8px; }
+.race-grid h3:first-child { margin-top: 0; }
+.stepper { display: flex; align-items: center; gap: 12px; }
+.stepper output { font: 800 56px/1 var(--display); color: var(--navy); min-width: 2ch; text-align: center; font-variant-numeric: tabular-nums; }
+.names { display: grid; gap: 6px; margin-top: 12px; font-size: 14px; font-weight: 600; }
+.names textarea, .text {
+  font: 500 16px/1.4 var(--body); color: var(--ink); border: 1.5px solid var(--rule); border-radius: 6px; padding: 10px 12px; resize: vertical; width: 100%;
+}
+.names textarea:focus-visible, .text:focus-visible { outline: 3px solid var(--orange); outline-offset: 1px; }
+.chips { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; max-height: 120px; overflow: auto; }
+.chips li { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; background: var(--paper-2); border-radius: 4px; padding: 3px 8px; }
+.chips i { width: 12px; height: 12px; border-radius: 3px; box-shadow: 0 0 0 1px rgba(11, 34, 57, .25); }
+.options { display: grid; gap: 8px; }
+.options button {
+  display: grid; gap: 2px; text-align: left; cursor: pointer; font: inherit; color: var(--ink);
+  background: var(--paper); border: 1.5px solid var(--rule); border-radius: 8px; padding: 10px 14px;
+}
+.options button strong { font: 700 17px/1.2 var(--display); color: var(--navy); }
+.options button span { font-size: 14px; color: var(--muted); }
+.options button[aria-checked="true"] { border-color: var(--navy); background: #E6F1F8; box-shadow: inset 0 0 0 1px var(--navy); }
+.options button:disabled { opacity: .5; cursor: default; }
+.options button:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; }
+.race-foot { display: flex; align-items: center; gap: 10px; padding: 14px 28px 20px; border-top: 1px solid var(--rule); }
+.race-foot p { margin: 0 auto 0 0; color: var(--muted); }
+.race-foot b { color: var(--ink); }
+.warn-text { color: var(--red) !important; font-weight: 600; }
+
+/* Torre de cronometragem */
+.race-title { font: 800 clamp(34px, 5vh, 56px)/1 var(--display); color: var(--navy); margin-top: 6px; }
+.race-tower .race-list { flex: 1 1 auto; min-height: 0; overflow: auto; margin-top: 12px; }
+.race-tower > section.race-list { flex: 1 1 auto; }
+/* 30 carros: linhas mais baixas */
+.race-tower.many .standings button { padding: 1px 4px; font-size: 14px; }
+.race-tower.many .standings .pos { font-size: 16px; }
+.race-tower.many .standings .dist { font-size: 14px; }
+.race-tower .standings button { grid-template-columns: 26px 18px minmax(0, 1fr) auto auto; padding: 4px 4px; }
+.race-tower .standings .dist { min-width: 5.5em; font-size: 16px; }
+.race-tower .standings .kind { color: var(--red); font-weight: 600; }
+.race-tower .standings .swatch { width: 14px; height: 14px; border-radius: 3px; box-shadow: 0 0 0 1px rgba(11, 34, 57, .25); }
+.present .race-tower .standings button { grid-template-columns: 2.4em 1.2em minmax(0, 1fr) auto auto; }
+
+/* Semáforo da largada */
+.lights { position: absolute; left: 50%; top: 8%; transform: translateX(-50%); display: grid; justify-items: center; gap: 10px; pointer-events: none; }
+.gantry { display: flex; gap: 10px; padding: 12px 16px; background: #0B1622; border-radius: 10px; box-shadow: 0 16px 40px -12px rgba(0, 0, 0, .6); }
+.pod { display: grid; gap: 8px; padding: 8px; background: #1B2733; border-radius: 8px; }
+.pod i { width: clamp(22px, 3.4vw, 54px); aspect-ratio: 1; border-radius: 50%; background: #3A1416; box-shadow: inset 0 2px 6px rgba(0, 0, 0, .6); }
+.pod i.on { background: radial-gradient(circle at 35% 35%, #FF8A80, #E3262C 55%, #9E1116); box-shadow: 0 0 22px 4px rgba(227, 38, 44, .65); }
+.lights p { margin: 0; font: 800 clamp(22px, 3vw, 48px)/1 var(--display); color: var(--navy); background: #fff; padding: 8px 18px; border-radius: 6px; box-shadow: 0 8px 24px -10px rgba(3, 26, 52, .5); }
+.lap-chip { font-size: 18px; }
+
+/* Pódio */
+.podium {
+  position: absolute; inset: 6% 8%; display: flex; flex-direction: column; align-items: center; gap: 1.2vh;
+  background: rgba(255, 255, 255, .97); border-radius: 12px; padding: 3vh 3vw; box-shadow: 0 30px 80px -24px rgba(3, 26, 52, .55); overflow: auto;
+}
+.podium .checkered { width: 44px; height: 44px; color: var(--navy); }
+.podium h2 { font: 800 clamp(34px, 5.5vh, 90px)/1 var(--display); color: var(--navy); margin: 0; text-align: center; }
+.podium .prize { margin: 0; font: 600 clamp(18px, 2.4vh, 40px)/1.2 var(--body); color: var(--orange-ink); }
+.steps { display: flex; align-items: flex-end; gap: 12px; margin-top: 1vh; }
+.step { display: grid; justify-items: center; gap: 8px; width: clamp(110px, 12vw, 240px); }
+.step .who { font: 700 clamp(15px, 2vh, 32px)/1.2 var(--display); padding: 6px 12px; border-radius: 6px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.plinth { width: 100%; display: grid; place-items: center; align-content: center; gap: 2px; background: var(--navy); color: #fff; border-radius: 6px 6px 0 0; }
+.plinth b { font: 800 clamp(28px, 4.5vh, 72px)/1 var(--display); }
+.plinth small { font-size: clamp(12px, 1.5vh, 26px); opacity: .85; font-variant-numeric: tabular-nums; }
+.p1 .plinth { height: clamp(90px, 15vh, 260px); background: var(--orange); color: #0B2239; }
+.p2 .plinth { height: clamp(70px, 11vh, 200px); }
+.p3 .plinth { height: clamp(55px, 8vh, 150px); background: var(--teal); }
+.rest { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 14px; margin: 1vh 0 0; padding: 0; list-style-position: inside; font-size: 14px; color: var(--muted); max-width: 90%; }
+.rest li { display: list-item; }
+.rest i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin: 0 5px 0 2px; }
+.podium-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: auto; padding-top: 1.5vh; }
+.present .race-tower.many .standings button { font-size: clamp(12px, 1.55vh, 34px); padding: .12vh .3vw; }
+.present .race-tower.many .race-title { font-size: clamp(28px, 4vh, 90px); }
+.race-tower.many .standings button { line-height: 1.15; }
+.race-tower.many .standings .pos, .present .race-tower.many .standings .pos { font-size: 1.05em; line-height: 1.15; }
+.race-tower.many .standings .dist, .present .race-tower.many .standings .dist { font-size: 1em; }
+.race-tower.many .standings .swatch { width: 12px; height: 12px; }

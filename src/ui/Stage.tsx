@@ -1,6 +1,7 @@
 import { useDemo, worldRef, glRef } from './useDemo';
 import { Pause, Play, RotateCcw, SkipForward, PenLine, Layers, Presentation, Video } from 'lucide-react';
 import { CIRCUITS } from '../engine/circuits';
+import { RaceOverlay } from './RaceOverlay';
 import { LEADER, ELITE_COLOR, CHILD, ghostColor } from '../render/worldRenderer';
 
 const SPEEDS = [1, 3, 10, 30];
@@ -57,21 +58,34 @@ export function Stage() {
           </div>
         )}
 
+        <RaceOverlay />
         {d.paused && mode !== 'draw' && !d.deck && <div className="overlay-top"><span className="chip">Pausado. Espaço continua.</span></div>}
       </div>
       </div>
 
       <div className="caption">
         <strong>{mode === 'draw' ? 'Desenhe sua pista' : sim.track.name}</strong>
+        {d.race ? (
+          <ul className="legend" aria-label="Participantes">
+            {d.race.racers.slice(0, 8).map((r) => <li key={r.no}><i style={{ background: r.color }} />{r.name}</li>)}
+            {d.race.racers.length > 8 && <li>+{d.race.racers.length - 8}</li>}
+          </ul>
+        ) : (
         <ul className="legend" aria-label="Legenda">
           <li><i style={{ background: LEADER }} />Líder</li>
           <li><i style={{ background: ELITE_COLOR }} />Campeão copiado</li>
           <li><i style={{ background: CHILD }} />Filho com mutação</li>
         </ul>
+        )}
       </div>
 
       <div className="bulletin-row">
         <p className="bulletin" aria-live="polite">{d.narration}</p>
+        {mode === 'race' ? (
+          <div className="actions full-only">
+            <button className="btn" onClick={() => d.endRace()}>Encerrar corrida</button>
+          </div>
+        ) : (
         <div className="actions full-only">
           <button className="btn" onClick={() => (d.mode === 'ghosts' ? d.stopGhosts() : d.startGhosts())} disabled={!sim.history.length} title="Tecla G" aria-pressed={d.mode === 'ghosts'}>
             <Layers aria-hidden /> {d.mode === 'ghosts' ? 'Voltar ao treino' : 'Comparar gerações'}
@@ -81,6 +95,7 @@ export function Stage() {
             <Presentation aria-hidden /> {d.deck ? 'Voltar à pista' : 'Explicar a evolução'}
           </button>
         </div>
+        )}
       </div>
 
       <Dock />
@@ -105,11 +120,11 @@ function Dock() {
               <button key={v} aria-pressed={d.speed === v} onClick={() => d.setSpeed(v)} title={`Tecla ${i + 1}`}>{v}×</button>
             ))}
           </div>
-          <button className="btn icon" onClick={() => d.restart()} title="Do zero: cérebros novos" aria-label="Recomeçar do zero"><RotateCcw aria-hidden /></button>
+          <button className="btn icon" onClick={() => d.restart()} title="Do zero: cérebros novos" aria-label="Recomeçar do zero" disabled={d.mode === 'race'}><RotateCcw aria-hidden /></button>
         </div>
       </div>
 
-      <div className="group" role="group" aria-labelledby="g-track">
+      <fieldset className="group" aria-labelledby="g-track" disabled={d.mode === 'race'}>
         <span className="group-label" id="g-track">Pista</span>
         <div className="group-row">
           <label className="pick">
@@ -122,7 +137,7 @@ function Dock() {
           <button className="btn icon" onClick={() => d.newTrack()} title="Próxima pista (N)" aria-label="Próxima pista"><SkipForward aria-hidden /></button>
           <button className="btn icon" onClick={() => d.startDraw()} title="Desenhar uma pista" aria-label="Desenhar uma pista"><PenLine aria-hidden /></button>
         </div>
-      </div>
+      </fieldset>
 
       <div className="group" role="group" aria-labelledby="g-view">
         <span className="group-label" id="g-view">Câmera</span>

@@ -1,6 +1,7 @@
 // Física, sensores, progresso e tempo de volta de um carro.
 import { createActivations, forward, type Layers } from './network.ts';
 import { onTrack, type Track } from './track.ts';
+import type { Rng } from './rng.ts';
 import {
   SENSOR_RANGE, SENSOR_STEP, MAX_SPEED, ACCEL, STEER, STEER_SPEED_LOSS,
   STUCK_STEPS, BACKWARD_LIMIT, PROGRESS_WINDOW, STEPS_PER_SECOND,
@@ -13,6 +14,13 @@ export interface Brain {
   layers: Layers;
   angles: number[]; // ângulos dos sensores em radianos
 }
+
+/**
+ * Sorte da corrida ("motor do dia"): rendimento que oscila devagar entre 1 − spread e 1.
+ * Não mexe no que o cérebro decide; só faz o carro andar um pouco menos que o previsto, então
+ * não o joga para fora da pista. `tau` = passos para a oscilação mudar de verdade.
+ */
+export interface Luck { rng: Rng; spread: number; tau: number }
 
 export class Car {
   id = 0; // número na largada, para a classificação
@@ -27,6 +35,11 @@ export class Car {
   lastImprove = 0;
   laps = 0;
   lapStart = 0;
+  startProgress = 0; // largada atrás da linha (grid) começa com progresso negativo
+  luck: Luck | null = null;
+  private form = 0; // estado da oscilação da sorte (média 0, desvio 1)
+  /** Rendimento atual do motor (1 = sem sorte). */
+  get power() { return this.luck ? 1 - this.luck.spread * (0.5 + 0.5 * Math.tanh(this.form)) : 1; }
 
   constructor(readonly genome: Float32Array, readonly kind: CarKind, readonly brain: Brain) {
     this.acts = createActivations(brain.layers);
@@ -37,7 +50,29 @@ export class Car {
     this.x = track.center[0][0]; this.y = track.center[0][1]; this.a = track.startAngle; this.v = 0;
     this.px = this.x; this.py = this.y; this.pa = this.a;
     this.alive = true; this.idx = 0; this.progress = 0; this.best = 0;
-    this.lastImprove = 0; this.laps = 0; this.lapStart = 0;
+    this.lastImprove = 0; this.laps = 0; this.lapStart = 0; this.startProgress = 0;
+  }
+
+  /**
+   * Largada fora da linha: `back` pontos da linha central atrás da largada e `lateral` unidades
+   * para o lado (positivo = direita de quem dirige). Usado no grid da corrida.
+   */
+  placeAt(track: Track, back: number, lateral: number) {
+    this.reset(track);
+    const { center, n: N } = track, i = (N - back) % N;
+    const a = center[(i - 1 + N) % N], b = center[(i + 1) % N], ang = Math.atan2(b[1] - a[1], b[0] - a[0]);
+    this.x = center[i][0] - Math.sin(ang) * lateral; this.y = center[i][1] + Math.cos(ang) * lateral; this.a = ang;
+    this.px = this.x; this.py = this.y; this.pa = this.a;
+    this.idx = i; this.progress = this.best = this.startProgress = -back;
+  }
+
+  /** Volta para o centro da pista, parado, no ponto onde estava; mantém voltas e progresso. */
+  respawn(track: Track, t: number) {
+    const { center, n: N } = track, i = this.idx;
+    const a = center[(i - 1 + N) % N], b = center[(i + 1) % N];
+    this.x = center[i][0]; this.y = center[i][1]; this.a = Math.atan2(b[1] - a[1], b[0] - a[0]); this.v = 0;
+    this.px = this.x; this.py = this.y; this.pa = this.a;
+    this.alive = true; this.lastImprove = t; this.best = this.progress;
   }
 
   /** Pose entre o passo anterior (alpha = 0) e o atual (alpha = 1), escrita em `out`. */
@@ -62,9 +97,14 @@ export class Car {
     }
     inp[S] = this.v / MAX_SPEED;
     const out = forward(this.genome, layers, this.acts);
+    if (this.luck) { // oscilação lenta (Ornstein-Uhlenbeck), estacionária com desvio 1
+      const { rng, tau } = this.luck;
+      this.form += -this.form / tau + Math.sqrt(2 / tau) * rng.gauss();
+    }
     this.a += out[0] * STEER * (1 - (STEER_SPEED_LOSS * this.v) / MAX_SPEED);
     this.v = Math.max(0, Math.min(MAX_SPEED, this.v + out[1] * ACCEL));
-    this.x += Math.cos(this.a) * this.v; this.y += Math.sin(this.a) * this.v;
+    const move = this.v * this.power;
+    this.x += Math.cos(this.a) * move; this.y += Math.sin(this.a) * move;
     if (!onTrack(track, this.x, this.y)) { this.alive = false; return null; }
 
     const { center, n: N } = track;
@@ -81,7 +121,7 @@ export class Car {
       if (this.laps > 0) lap = (t - this.lapStart) / STEPS_PER_SECOND; // 1ª volta sai parada, não conta
       this.laps++; this.lapStart = t;
     }
-    if (t - this.lastImprove > STUCK_STEPS || this.progress < -BACKWARD_LIMIT) this.alive = false;
+    if (t - this.lastImprove > STUCK_STEPS || this.progress < this.startProgress - BACKWARD_LIMIT) this.alive = false;
     return lap;
   }
 }

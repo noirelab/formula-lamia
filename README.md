@@ -32,6 +32,15 @@ Na primeira geração quase todos batem. Entre a 3ª e a 6ª alguém completa a 
 </tr>
 </table>
 
+### Corrida entre alunos (tecla R)
+
+Uma "roleta" com carros: de 1 a 30 participantes, cada um com nome e cor próprios, **todos com o mesmo cérebro** (o melhor treinado até agora). Quem ganha é a sorte: o motor de cada carro rende entre 92% e 100%, oscilando devagar ao longo da prova. Nas 240 corridas do teste de justiça, cada participante venceu perto de 1 em N vezes.
+
+- **Grid com classificação:** uma volta lançada decide o grid, depois vêm as 5 luzes vermelhas.
+- **Largada única:** todos saem juntos do mesmo ponto.
+- **3, 5 ou 10 voltas.** Quem sai da pista volta parado, com 1 s de penalidade. Os carros não batem entre si.
+- **Bandeirada:** pódio com o prêmio ("Ana ganhou um bombom!"), **Correr de novo** com sorte nova e os mesmos nomes, ou **Nova corrida**.
+
 ### Explicar a evolução (tecla E)
 
 Uma apresentação de 7 slides feita **com os dados reais da última geração**: os raios de verdade do P1, a rede dele com os valores daquele instante, a classificação, a chance de cada posição virar pai, o filho pintado com as conexões de cada pai e as mutações com os valores de antes e depois. A pista continua rodando ao vivo no canto.
@@ -63,6 +72,7 @@ Para repetir uma execução boa, abra `index.html?seed=NÚMERO&pista=ID` (por ex
 |---|---|
 | **Espaço** | pausar / continuar |
 | **1 2 3 4** | velocidade 1×, 3×, 10×, 30× |
+| **R** | corrida entre alunos |
 | **E** | explicar a evolução (→ ← passam os slides, Esc fecha) |
 | **G** | comparar gerações |
 | **C** | câmera seguindo o líder (ou o carro escolhido) |
@@ -89,6 +99,8 @@ Clique em qualquer carro, na pista ou na classificação, para ver o cérebro de
 
 Só 1 minuto? No **Painel**: **Correr com o campeão na próxima pista**.
 
+Fim de apresentação com um grupo? Aperte **R**, digite os nomes e deixe a sorte decidir quem leva o bombom.
+
 ---
 
 ## Por dentro
@@ -110,6 +122,7 @@ A demo começa em **Monza**, a mais confiável nos testes (6 de 6 seeds completa
 ```bash
 node --experimental-transform-types scripts/build-circuits.ts scripts/f1-circuits.geojson   # regenera src/engine/circuits.ts
 node --experimental-transform-types scripts/check-circuits.ts <circuitos.json>             # mede o aprendizado por circuito
+node --experimental-transform-types scripts/check-race.ts it-1922 20 0.08                  # calibra a sorte da corrida
 ```
 
 Às vezes uma população empaca numa curva, em qualquer pista. Se passar da geração 12 sem nenhuma volta, aperte **Do zero**.
@@ -118,7 +131,7 @@ node --experimental-transform-types scripts/check-circuits.ts <circuitos.json>  
 
 ```
 src/
-  engine/   rede neural, genética, pista, física do carro, simulação, parâmetros
+  engine/   rede neural, genética, pista, física do carro, simulação, corrida, parâmetros
   render/   mapa 2D, carros, slides, rede, gráfico, maquete 3D e modelo do carro
   ui/       controlador (demo.ts) e componentes React
 tests/      testes do motor e o teste de aprendizado
