@@ -5,6 +5,7 @@ import { PresenterPanel } from './ui/PresenterPanel';
 import { DeckScreen } from './ui/DeckScreen';
 import { RaceSetup } from './ui/RaceSetup';
 import { RaceTower } from './ui/RaceTower';
+import { RaceBroadcast } from './ui/RaceBroadcast';
 import { demo, useDemo, togglePresent } from './ui/useDemo';
 import { SlidersHorizontal, Maximize, Minimize, Flag } from 'lucide-react';
 import logo from './assets/lamia-icon.webp';
@@ -13,7 +14,11 @@ export default function App() {
   const d = useDemo();
 
   useEffect(() => {
-    const onFs = () => { if (!document.fullscreenElement && demo.present) demo.setPresent(false); };
+    const onFs = () => {
+      if (document.fullscreenElement) return;
+      if (demo.present) demo.setPresent(false);
+      if (demo.broadcast) demo.toggleBroadcast(false);
+    };
     const onKey = (e: KeyboardEvent) => {
       const el = e.target as HTMLElement;
       if (e.ctrlKey || e.metaKey || e.altKey || el.closest('input, textarea')) return;
@@ -31,6 +36,8 @@ export default function App() {
       else if (e.key === 'v' || e.key === 'V') demo.toggle3d();
       else if (e.key === 'p' || e.key === 'P') demo.setPanel(!demo.panelOpen);
       else if (e.key === 'r' || e.key === 'R') demo.openRaceSetup();
+      else if ((e.key === 't' || e.key === 'T') && demo.race) demo.toggleBroadcast();
+      else if (e.key === 'Escape' && demo.broadcast) demo.toggleBroadcast(false);
       else if (e.key === 'c' || e.key === 'C') demo.toggleCamera();
       else if ((e.key === 'g' || e.key === 'G') && demo.mode !== 'race') (demo.mode === 'ghosts' ? demo.stopGhosts() : demo.startGhosts());
     };
@@ -43,7 +50,7 @@ export default function App() {
   }, []);
 
   return (
-    <div className={`app${d.present ? ' present' : ''}${d.deck ? ' deck-open' : ''}`}>
+    <div className={`app${d.present ? ' present' : ''}${d.deck ? ' deck-open' : ''}${d.broadcast && d.race ? ' broadcast' : ''}`}>
       <header className="masthead">
         <img className="logo" src={logo} alt="LAMIA, Machine Learning for Industry" />
         <h1>A IA aprende a dirigir</h1>
@@ -66,6 +73,7 @@ export default function App() {
       <PresenterPanel />
       <DeckScreen />
       <RaceSetup />
+      <RaceBroadcast />
     </div>
   );
 }

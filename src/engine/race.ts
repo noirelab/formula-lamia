@@ -43,6 +43,7 @@ export interface Racer {
   qualTime: number | null; // s; null = não completou a volta de classificação
   grid: number; // posição de largada, 0 = pole
   lapTimes: number[]; // s
+  bestLap: number | null; // s
   finish: number | null; // s de corrida até a bandeirada
 }
 
@@ -51,7 +52,9 @@ export type RaceEvent =
   | { type: 'lead'; racer: Racer }
   | { type: 'lap'; lap: number } // o líder começou a volta `lap`
   | { type: 'finish'; racer: Racer; pos: number }
-  | { type: 'respawn'; racer: Racer };
+  | { type: 'respawn'; racer: Racer }
+  | { type: 'lapTime'; racer: Racer; lap: number; time: number } // alguém completou uma volta
+  | { type: 'fastest'; racer: Racer; time: number }; // nova volta mais rápida da prova
 
 /** 30 cores bem separadas: matiz pelo ângulo de ouro, alternando claro e escuro. */
 export function racerColor(i: number): string {
@@ -86,6 +89,7 @@ export class Race {
   private lastLeadEvent = -Infinity;
   private leaderLap = 0;
   private winnerT: number | null = null;
+  fastest: { racer: Racer; time: number } | null = null;
 
   constructor(o: RaceOptions) {
     this.laps = o.laps; this.start = o.start; this.seed = o.seed; this.track = o.track;
@@ -93,7 +97,7 @@ export class Race {
     this.racers = o.names.map((name, i) => {
       const car = new Car(o.genome, 'elite', o.brain);
       car.id = i + 1; car.luck = { rng: this.rng, spread: RACE.luckSpread, tau: RACE.luckTau }; car.reset(o.track);
-      return { no: i + 1, name, color: racerColor(i), ink: racerInk(i), car, penalty: 0, respawns: 0, qualTime: null, grid: i, lapTimes: [], finish: null };
+      return { no: i + 1, name, color: racerColor(i), ink: racerInk(i), car, penalty: 0, respawns: 0, qualTime: null, grid: i, lapTimes: [], bestLap: null, finish: null };
     });
     this.phase = o.start === 'grid' ? 'qualifying' : 'lights';
     if (o.start === 'single') this.formGrid();
@@ -160,8 +164,14 @@ export class Race {
       for (const r of this.racers) {
         if (r.finish !== null) continue;
         if (!this.drive(r, rt)) continue;
-        const now = this.crossTime(r, rt), prev = r.lapTimes.reduce((s, v) => s + v, 0);
-        r.lapTimes.push(now - prev);
+        const now = this.crossTime(r, rt), prev = r.lapTimes.reduce((s, v) => s + v, 0), lapT = now - prev;
+        r.lapTimes.push(lapT);
+        this.events.push({ type: 'lapTime', racer: r, lap: r.lapTimes.length, time: lapT });
+        // 1ª volta sai parada: não conta para melhor volta (como no treino)
+        if (r.lapTimes.length > 1) {
+          if (r.bestLap === null || lapT < r.bestLap) r.bestLap = lapT;
+          if (!this.fastest || lapT < this.fastest.time) { this.fastest = { racer: r, time: lapT }; this.events.push({ type: 'fastest', racer: r, time: lapT }); }
+        }
         if (r.car.laps >= this.laps) { r.finish = now; arrived.push(r); }
       }
       if (arrived.length) {

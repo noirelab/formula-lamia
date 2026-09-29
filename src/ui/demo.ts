@@ -218,7 +218,26 @@ export class Demo {
       else if (e.type === 'lap') this.say(e.lap === r.laps ? 'Última volta!' : `Volta ${e.lap} de ${r.laps}`, e.lap === r.laps);
       else if (e.type === 'finish' && e.pos === 1) this.say(`${e.racer.name} recebe a bandeirada em 1º!`, true);
       else if (e.type === 'respawn') this.say(`${e.racer.name} saiu da pista e volta com 1 s de penalidade.`);
+      else if (e.type === 'fastest' && e.racer.lapTimes.length > 1) {
+        this.banner = { kind: 'fastest', racer: e.racer, time: e.time, at: performance.now() };
+        this.say(`Volta mais rápida: ${e.racer.name}, ${fmt(e.time)} s`);
+      } else if (e.type === 'lapTime' && e.racer === r.standings()[0] && (!this.banner || performance.now() - this.banner.at > 4000))
+        this.banner = { kind: 'lap', racer: e.racer, time: e.time, lap: e.lap, at: performance.now() };
     }
+    this.trackPositions(r);
+  }
+
+  /** Posição de cada carro e quando mudou por último: a transmissão mostra setas de ganho e perda. */
+  private trackPositions(r: Race) {
+    if (r.phase !== 'racing' && r.phase !== 'finished') { this.posMemo.clear(); return; }
+    // Só conta ultrapassagem que se sustenta por 1,5 s: carros colados trocam de ordem o tempo todo.
+    const now = performance.now();
+    r.standings().forEach((x, i) => {
+      const m = this.posMemo.get(x.no);
+      if (!m) { this.posMemo.set(x.no, { pos: i, dir: 0, at: 0, cand: i, since: now }); return; }
+      if (i !== m.cand) { m.cand = i; m.since = now; }
+      else if (i !== m.pos && now - m.since >= 1500) { m.dir = i < m.pos ? 1 : -1; m.pos = i; m.at = now; }
+    });
   }
 
   private readEvents() {
@@ -319,7 +338,7 @@ export class Demo {
     this.changed();
   }
 
-  private resetView() { this.race = null; this.raceSetup = false; this.deck = null; this.selected = null; this.mode = 'train'; this.ghosts = null; this.holdUntil = 0; }
+  private resetView() { this.banner = null; this.posMemo.clear(); if (this.broadcast && !this.race) this.broadcast = false; this.race = null; this.raceSetup = false; this.deck = null; this.selected = null; this.mode = 'train'; this.ghosts = null; this.holdUntil = 0; }
 
   /** Troca de pista mantendo os cérebros: próximo circuito do calendário, ou outra sorteada. */
   newTrack() {
@@ -484,6 +503,9 @@ export class Demo {
 
   // ---------- Corrida ----------
   race: Race | null = null;
+  broadcast = false; // transmissão em tela cheia (gráficos estilo F1)
+  banner: { kind: 'fastest' | 'lap'; racer: Racer; time: number; lap?: number; at: number } | null = null;
+  posMemo = new Map<number, { pos: number; dir: 1 | -1 | 0; at: number; cand: number; since: number }>();
   raceSetup = false; // folha "Corrida" aberta
   raceBest: RaceBrain | null = null;
   raceConfig: RaceConfig = { count: 10, names: '', laps: 10, start: 'grid', brain: 'best', prize: 'um bombom' };
@@ -521,9 +543,17 @@ export class Demo {
     this.changed();
   }
 
+  toggleBroadcast(on = !this.broadcast) {
+    if (!this.race) return;
+    this.broadcast = on;
+    if (on) document.documentElement.requestFullscreen?.().catch(() => {});
+    else if (document.fullscreenElement && !this.present) document.exitFullscreen().catch(() => {});
+    this.changed();
+  }
+
   /** Mesmos participantes, sorte nova. */
   raceAgain() { this.startRace(this.raceConfig); }
-  endRace() { this.resetView(); this.say('De volta ao treino.', true); this.changed(); }
+  endRace() { this.toggleBroadcast(false); this.resetView(); this.say('De volta ao treino.', true); this.changed(); }
 
   /** Participante de um carro (na corrida). */
   racerOf(c: Car): Racer | undefined { return this.race?.racers.find((r) => r.car === c); }

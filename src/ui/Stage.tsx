@@ -1,5 +1,5 @@
 import { useDemo, worldRef, glRef } from './useDemo';
-import { Pause, Play, RotateCcw, SkipForward, PenLine, Layers, Presentation, Video } from 'lucide-react';
+import { Tv, Pause, Play, RotateCcw, SkipForward, PenLine, Layers, Presentation, Video } from 'lucide-react';
 import { CIRCUITS } from '../engine/circuits';
 import { RaceOverlay } from './RaceOverlay';
 import { LEADER, ELITE_COLOR, CHILD, ghostColor } from '../render/worldRenderer';
@@ -83,6 +83,7 @@ export function Stage() {
         <p className="bulletin" aria-live="polite">{d.narration}</p>
         {mode === 'race' ? (
           <div className="actions full-only">
+            <button className="btn primary" onClick={() => d.toggleBroadcast(true)} title="Tecla T"><Tv aria-hidden /> Tela cheia da corrida</button>
             <button className="btn" onClick={() => d.endRace()}>Encerrar corrida</button>
           </div>
         ) : (

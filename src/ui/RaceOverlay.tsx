@@ -1,4 +1,4 @@
-import { Flag, RotateCcw, Settings2, LogOut } from 'lucide-react';
+import { Flag, RotateCcw, Settings2, LogOut, Tv } from 'lucide-react';
 import { useDemo } from './useDemo';
 import { STEPS_PER_SECOND } from '../engine/params';
 
@@ -14,7 +14,7 @@ export function RaceOverlay() {
 
   return (
     <>
-      {phase === 'qualifying' && (
+      {phase === 'qualifying' && !d.broadcast && (
         <div className="overlay-top"><span className="chip">Volta de classificação · {Math.floor(race.phaseT / STEPS_PER_SECOND)} s</span></div>
       )}
       {(phase === 'grid' || phase === 'lights' || go) && (
@@ -27,7 +27,7 @@ export function RaceOverlay() {
           <p>{go ? 'Valendo!' : phase === 'grid' ? `${st[0].name} larga na pole` : 'Atenção…'}</p>
         </div>
       )}
-      {phase === 'racing' && !go && (
+      {phase === 'racing' && !go && !d.broadcast && (
         <div className="overlay-top"><span className="chip lap-chip">{race.lap === race.laps ? 'Última volta' : `Volta ${race.lap} de ${race.laps}`}</span></div>
       )}
       {phase === 'finished' && <Podium />}
@@ -57,6 +57,7 @@ function Podium() {
       <div className="podium-actions">
         <button className="btn primary" onClick={() => d.raceAgain()}><RotateCcw aria-hidden /> Correr de novo</button>
         <button className="btn" onClick={() => d.openRaceSetup()}><Settings2 aria-hidden /> Nova corrida</button>
+        {!d.broadcast && <button className="btn" onClick={() => d.toggleBroadcast(true)}><Tv aria-hidden /> Tela cheia</button>}
         <button className="btn quiet" onClick={() => d.endRace()}><LogOut aria-hidden /> Voltar ao treino</button>
       </div>
     </div>
