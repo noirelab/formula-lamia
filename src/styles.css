@@ -417,27 +417,6 @@ dialog.race-setup::backdrop { background: rgba(3, 26, 52, .35); }
 .lights p { margin: 0; font: 800 clamp(22px, 3vw, 48px)/1 var(--display); color: var(--navy); background: #fff; padding: 8px 18px; border-radius: 6px; box-shadow: 0 8px 24px -10px rgba(3, 26, 52, .5); }
 .lap-chip { font-size: 18px; }
 
-/* Pódio */
-.podium {
-  position: absolute; inset: 6% 8%; display: flex; flex-direction: column; align-items: center; gap: 1.2vh;
-  background: rgba(255, 255, 255, .97); border-radius: 12px; padding: 3vh 3vw; box-shadow: 0 30px 80px -24px rgba(3, 26, 52, .55); overflow: auto;
-}
-.podium .checkered { width: 44px; height: 44px; color: var(--navy); }
-.podium h2 { font: 800 clamp(34px, 5.5vh, 90px)/1 var(--display); color: var(--navy); margin: 0; text-align: center; }
-.podium .prize { margin: 0; font: 600 clamp(18px, 2.4vh, 40px)/1.2 var(--body); color: var(--orange-ink); }
-.steps { display: flex; align-items: flex-end; gap: 12px; margin-top: 1vh; }
-.step { display: grid; justify-items: center; gap: 8px; width: clamp(110px, 12vw, 240px); }
-.step .who { font: 700 clamp(15px, 2vh, 32px)/1.2 var(--display); padding: 6px 12px; border-radius: 6px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.plinth { width: 100%; display: grid; place-items: center; align-content: center; gap: 2px; background: var(--navy); color: #fff; border-radius: 6px 6px 0 0; }
-.plinth b { font: 800 clamp(28px, 4.5vh, 72px)/1 var(--display); }
-.plinth small { font-size: clamp(12px, 1.5vh, 26px); opacity: .85; font-variant-numeric: tabular-nums; }
-.p1 .plinth { height: clamp(90px, 15vh, 260px); background: var(--orange); color: #0B2239; }
-.p2 .plinth { height: clamp(70px, 11vh, 200px); }
-.p3 .plinth { height: clamp(55px, 8vh, 150px); background: var(--teal); }
-.rest { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 14px; margin: 1vh 0 0; padding: 0; list-style-position: inside; font-size: 14px; color: var(--muted); max-width: 90%; }
-.rest li { display: list-item; }
-.rest i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin: 0 5px 0 2px; }
-.podium-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: auto; padding-top: 1.5vh; }
 .present .race-tower.many .standings button { font-size: clamp(12px, 1.55vh, 34px); padding: .12vh .3vw; }
 .present .race-tower.many .race-title { font-size: clamp(28px, 4vh, 90px); }
 .race-tower.many .standings button { line-height: 1.15; }
@@ -584,7 +563,8 @@ dialog.race-setup::backdrop { background: rgba(3, 26, 52, .35); }
   padding: .7em 1.6em; border: 0; border-radius: 8px; background: #fff; color: var(--navy); cursor: pointer;
   box-shadow: 0 14px 36px -12px rgba(0, 0, 0, .6); transition: transform .15s var(--ease-out), background-color .15s;
 }
-.gs-go svg { width: 1em; height: 1em; fill: currentColor; }
+.gs-go svg { width: 1em; height: 1em; }
+.gs-go svg.lucide-play { fill: currentColor; }
 .gs-go:hover { background: #E8F1F8; transform: translateY(-1px); }
 .gs-go:active { transform: scale(.97); }
 .gs-go:focus-visible, .gs-redo:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
@@ -598,3 +578,32 @@ dialog.race-setup::backdrop { background: rgba(3, 26, 52, .35); }
 @keyframes gs-slot { from { opacity: 0; transform: translateX(-10px); } }
 @media (prefers-reduced-motion: reduce) { .gs-panel, .gs-slots li, .gs-actions { animation: none; } }
 .bc-bar button { white-space: nowrap; }
+
+/* Resultado: mesmo painel do grid, com o pódio no meio */
+.race-tv:has(.grid-screen.result) .bc-tower { display: none; }
+.result .winner { display: grid; justify-items: center; gap: .3em; padding: 1.2em 1.4em .4em; text-align: center; }
+.result .winner svg { width: 1.8em; height: 1.8em; color: rgba(255, 255, 255, .8); }
+.result .winner h2 { margin: 0; font: 800 3em/1 var(--display); text-transform: uppercase; letter-spacing: .01em; }
+.result .winner p { margin: 0; font: 600 1.15em/1.2 var(--body); color: rgba(255, 255, 255, .75); }
+.steps { display: flex; justify-content: center; align-items: flex-end; gap: .7em; padding: 1em 1.4em 0; animation: gs-in .5s .15s var(--ease-out) both; }
+.step { display: grid; justify-items: center; gap: .5em; width: min(12em, 28%); }
+.step .who { font: 700 1.15em/1.2 var(--display); text-transform: uppercase; letter-spacing: .03em; padding: .3em .7em; border-radius: 4px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.plinth { width: 100%; display: grid; place-items: center; align-content: center; gap: .15em; background: rgba(255, 255, 255, .12); color: #fff; border-radius: 6px 6px 0 0; }
+.plinth b { font: 800 2.6em/1 var(--display); }
+.plinth small { font-size: .9em; opacity: .85; font-variant-numeric: tabular-nums; }
+.p1 .plinth { height: 8.5em; background: #fff; color: var(--navy); }
+.p2 .plinth { height: 6.2em; background: rgba(255, 255, 255, .22); }
+.p3 .plinth { height: 4.6em; }
+.result .steps + .gs-slots { border-top: 2px solid rgba(255, 255, 255, .85); margin: 0 1.4em; padding-left: 0; padding-right: 0; }
+.gs-slots.flat li:nth-child(even) { translate: none; }
+.gs-slots.flat { padding-bottom: 1.3em; }
+/* muitos carros: pódio mais baixo para a lista caber sem rolar */
+.result.many .winner { padding-top: .8em; }
+.result.many .winner svg { display: none; }
+.result.many .winner h2 { font-size: 2.3em; }
+.result.many .steps { padding-top: .6em; }
+.result.many .plinth b { font-size: 2em; }
+.result.many .p1 .plinth { height: 5.6em; }
+.result.many .p2 .plinth { height: 4.3em; }
+.result.many .p3 .plinth { height: 3.4em; }
+.result.many .gs-slots { grid-template-columns: repeat(3, 1fr); column-gap: .9em; }

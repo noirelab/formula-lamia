@@ -69,30 +69,45 @@ function StartingGrid() {
   );
 }
 
+/** Resultado: pódio dos três primeiros, o resto em caixas e o que fazer depois. */
 function Podium() {
   const d = useDemo(), race = d.race!, st = race.standings(), [first, second, third] = st;
+  const gap = (r: typeof first) => (r.finish === null ? 'não terminou' : r === first ? clock(r.finish) : `+${num(r.finish - first.finish!)} s`);
   const block = (r: typeof first | undefined, place: 1 | 2 | 3) => r && (
     <div className={`step p${place}`}>
       <span className="who" style={{ background: r.color, color: r.ink }}>{r.name}</span>
-      <div className="plinth"><b>{place}º</b>{r.finish !== null && <small>{place === 1 ? clock(r.finish) : `+${num(r.finish - first.finish!)} s`}</small>}</div>
+      <div className="plinth"><b>{place}º</b><small>{gap(r)}</small></div>
     </div>
   );
   return (
-    <div className="podium" role="dialog" aria-label="Resultado da corrida">
-      <Flag className="checkered" aria-hidden />
-      <h2>{first.name} venceu!</h2>
-      <p className="prize">Ganhou {d.raceConfig.prize}.</p>
-      <div className="steps">{block(second, 2)}{block(first, 1)}{block(third, 3)}</div>
-      {st.length > 3 && (
-        <ol className="rest" start={4}>
-          {st.slice(3).map((r) => <li key={r.no}><i style={{ background: r.color }} />{r.name}</li>)}
-        </ol>
-      )}
-      <div className="podium-actions">
-        <button className="btn primary" onClick={() => d.raceAgain()}><RotateCcw aria-hidden /> Correr de novo</button>
-        <button className="btn" onClick={() => d.openRaceSetup()}><Settings2 aria-hidden /> Nova corrida</button>
-        {!d.broadcast && <button className="btn" onClick={() => d.toggleBroadcast(true)}><Tv aria-hidden /> Tela cheia</button>}
-        <button className="btn quiet" onClick={() => d.endRace()}><LogOut aria-hidden /> Voltar ao treino</button>
+    <div className={`grid-screen result${st.length > 12 ? " many" : ""}`} role="dialog" aria-label="Resultado da corrida">
+      <div className="gs-panel">
+        <header>
+          <img src={logo} alt="" />
+          <strong>Resultado final</strong>
+          <span>{d.sim.track.name} · {race.laps} {race.laps === 1 ? 'volta' : 'voltas'}</span>
+        </header>
+        <section className="winner">
+          <Flag aria-hidden />
+          <h2>{first.name} venceu!</h2>
+          <p>Ganhou {d.raceConfig.prize}.</p>
+        </section>
+        <div className="steps">{block(second, 2)}{block(first, 1)}{block(third, 3)}</div>
+        {st.length > 3 && (
+          <ol className={`gs-slots flat${st.length > 17 ? ' dense' : ''}`}>
+            {st.slice(3).map((r, k) => (
+              <li key={r.no} style={{ '--c': r.color, '--k': k } as React.CSSProperties}>
+                <b>{k + 4}</b><span className="n">{r.name}</span><span className="t">{gap(r)}</span>
+              </li>
+            ))}
+          </ol>
+        )}
+      </div>
+      <div className="gs-actions">
+        <button className="gs-go" autoFocus onClick={() => d.raceAgain()}><RotateCcw aria-hidden /> Correr de novo</button>
+        <button className="gs-redo" onClick={() => d.openRaceSetup()}><Settings2 aria-hidden /> Nova corrida</button>
+        {!d.broadcast && <button className="gs-redo" onClick={() => d.toggleBroadcast(true)}><Tv aria-hidden /> Tela cheia</button>}
+        <button className="gs-redo" onClick={() => d.endRace()}><LogOut aria-hidden /> Voltar ao treino</button>
       </div>
     </div>
   );
