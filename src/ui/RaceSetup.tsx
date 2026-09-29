@@ -6,6 +6,7 @@ import { racerColor } from '../engine/race';
 import { CIRCUITS } from '../engine/circuits';
 
 const LAPS = [3, 5, 10];
+const MAX_LAPS = 99;
 
 /** Folha "Corrida": participantes, largada, voltas, cérebro, circuito e prêmio. */
 export function RaceSetup() {
@@ -76,8 +77,16 @@ export function RaceSetup() {
             </div>
 
             <h3>Voltas</h3>
-            <div className="seg" role="group" aria-label="Voltas">
-              {LAPS.map((v) => <button type="button" key={v} aria-pressed={cfg.laps === v} onClick={() => set({ laps: v })}>{v}</button>)}
+            <div className="laps-row">
+              <div className="seg" role="group" aria-label="Voltas prontas">
+                {LAPS.map((v) => <button type="button" key={v} aria-pressed={cfg.laps === v} onClick={() => set({ laps: v })}>{v}</button>)}
+              </div>
+              <label className="laps-custom">
+                <span>ou</span>
+                <input type="number" className="text" min={1} max={MAX_LAPS} step={1} value={cfg.laps} aria-label="Número de voltas"
+                  onChange={(e) => { const v = Math.round(+e.target.value); if (v >= 1) set({ laps: Math.min(MAX_LAPS, v) }); }} />
+                <span>voltas</span>
+              </label>
             </div>
 
             <h3>Circuito</h3>

@@ -575,6 +575,7 @@ export class Demo {
   startRace(cfg: RaceConfig = this.raceConfig) {
     const rb = this.raceBrainFor(cfg.brain);
     if (!rb) return;
+    cfg = { ...cfg, laps: Math.min(99, Math.max(1, Math.round(cfg.laps) || 1)) }; // valor digitado: sempre 1 a 99
     this.raceConfig = cfg;
     const typed = parseNames(cfg.names), n = Math.min(30, Math.max(cfg.count, typed.length, 1));
     const names = Array.from({ length: n }, (_, i) => typed[i] ?? `Carro ${i + 1}`);

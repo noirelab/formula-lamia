@@ -528,3 +528,8 @@ dialog.race-setup::backdrop { background: rgba(3, 26, 52, .35); }
 .app.deck-open .stage.fill canvas:not(.gl) { aspect-ratio: 1200 / 760; height: auto; }
 /* tela cheia da corrida: a maquete 3D ocupa a tela inteira */
 .app.race-tv .stage.fill { inset: 0; left: 0; transform: none; width: 100vw; height: 100vh; }
+
+.laps-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.laps-row .seg { margin: 0; }
+.laps-custom { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; color: var(--muted); }
+.laps-custom input { width: 5.5em; text-align: center; font-weight: 700; color: var(--navy); }
