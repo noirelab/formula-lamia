@@ -13,7 +13,7 @@ export function Stage() {
   return (
     <section className="stage-col" aria-label="Pista">
       <div className="stage-box">
-      <div className="stage" data-mode={mode}>
+      <div className={d.showing3d ? 'stage fill' : 'stage'} data-mode={mode}>
         <canvas ref={glRef} className="gl" aria-hidden="true" />
         <canvas
           ref={worldRef}

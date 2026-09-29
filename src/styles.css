@@ -24,7 +24,7 @@ body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(
 h1, h2 { text-wrap: balance; }
 b, strong { font-weight: 600; }
 
-.app { max-width: 1760px; margin: 0 auto; padding: 20px 28px 48px; }
+.app { margin: 0 auto; padding: 20px 28px 48px; }
 
 /* Cabeçalho da folha */
 .masthead { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-rows: auto auto; column-gap: 28px; align-items: end; }
@@ -293,7 +293,10 @@ dialog.panel::backdrop { background: rgba(3, 26, 52, .28); }
 .stage-col { display: flex; flex-direction: column; min-height: 0; min-width: 0; }
 /* o espaço que sobra depois de legenda, boletim e barra; o mapa ocupa o maior 1200:760 que couber */
 .stage-box { flex: 1 1 0; min-height: 160px; container-type: size; }
-.stage { width: min(100cqw, 100cqh * 1200 / 760); }
+.stage { width: min(100cqw, 100cqh * 1200 / 760); margin: 0 auto; }
+/* 3D: a maquete ocupa todo o espaço, sem vão embaixo nem dos lados */
+.stage.fill { width: 100%; height: 100%; }
+.stage.fill canvas:not(.gl) { aspect-ratio: auto; height: 100%; }
 .caption { margin-top: 10px; }
 .bulletin-row { margin-top: 8px; padding: 4px 0; }
 .dock { margin-top: 10px; }
@@ -496,7 +499,7 @@ dialog.race-setup::backdrop { background: rgba(3, 26, 52, .35); }
 .bc-card .loss { color: var(--loss); }
 
 .bc-banner {
-  left: 50%; bottom: 14vh; transform: translateX(-50%); display: flex; align-items: center; gap: .7em;
+  left: 50%; bottom: 12vh; transform: translateX(-50%); display: flex; align-items: center; gap: .7em;
   padding: .6em 1.2em; border-radius: 8px; background: var(--bc-panel); font-size: clamp(15px, 2.2vh, 44px);
   animation: bc-in .45s var(--ease-out);
 }
@@ -507,10 +510,21 @@ dialog.race-setup::backdrop { background: rgba(3, 26, 52, .35); }
 .bc-banner b { font: 800 1.3em/1 var(--display); font-variant-numeric: tabular-nums; }
 @keyframes bc-in { from { transform: translate(-50%, 20px); opacity: 0; } }
 
-.bc-controls { right: 1.4vw; bottom: 3vh; display: flex; gap: 8px; opacity: .55; transition: opacity .2s; }
-.bc-controls:hover { opacity: 1; }
+.bc-bar {
+  left: 50%; bottom: 2.4vh; transform: translateX(-50%); display: flex; align-items: center; gap: 8px;
+  padding: 8px; background: rgba(255, 255, 255, .96); border-radius: 10px; box-shadow: 0 16px 40px -12px rgba(3, 26, 52, .5);
+  color: var(--ink); transition: opacity .3s var(--ease-out), transform .3s var(--ease-out);
+}
+.bc-bar.hidden { opacity: 0; transform: translate(-50%, 16px); pointer-events: none; }
+.bc-bar .sep { width: 1px; align-self: stretch; background: var(--rule); margin: 2px 4px; }
+.bc-bar svg { width: 18px; height: 18px; stroke-width: 2.2; }
 @media (prefers-reduced-motion: reduce) { .bc-banner { animation: none; } }
 
 .kept { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px; align-items: stretch; }
 .keep-row { display: flex; gap: 8px; margin-top: 10px; }
 .keep-row .text { flex: 1; min-width: 0; }
+/* miniatura dos slides mantém a proporção do mapa */
+.app.deck-open .stage.fill { height: auto; }
+.app.deck-open .stage.fill canvas:not(.gl) { aspect-ratio: 1200 / 760; height: auto; }
+/* tela cheia da corrida: a maquete 3D ocupa a tela inteira */
+.app.race-tv .stage.fill { inset: 0; left: 0; transform: none; width: 100vw; height: 100vh; }

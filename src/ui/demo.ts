@@ -137,10 +137,15 @@ export class Demo {
     this.dpr = Math.min(window.devicePixelRatio || 1, 2);
     const w = this.world?.canvas;
     if (w && w.clientWidth) {
-      const px = Math.min(Math.round(w.clientWidth * this.dpr), 3200); // teto: TV 4K não precisa de mais
-      this.scale = px / WORLD_W;
-      w.width = px; w.height = Math.round(WORLD_H * this.scale);
-      this.trackOf = null;
+      if (this.showing3d) {
+        // 3D ocupa a área inteira (qualquer proporção); o canvas 2D por cima só leva os nomes, em px de tela
+        w.width = Math.round(w.clientWidth * this.dpr); w.height = Math.round(w.clientHeight * this.dpr);
+      } else {
+        const px = Math.min(Math.round(w.clientWidth * this.dpr), 3200); // teto: TV 4K não precisa de mais
+        this.scale = px / WORLD_W;
+        w.width = px; w.height = Math.round(WORLD_H * this.scale);
+        this.trackOf = null;
+      }
       this.gl?.resize(w.clientWidth, w.clientHeight, this.dpr);
     }
     for (const c of [this.brain, this.chart, this.deckCtx]) {
@@ -595,7 +600,7 @@ export class Demo {
   /** Participante de um carro (na corrida). */
   racerOf(c: Car): Racer | undefined { return this.race?.racers.find((r) => r.car === c); }
 
-  toggle3d() { this.view3d = !this.view3d; this.changed(); }
+  toggle3d() { this.view3d = !this.view3d; this.changed(); requestAnimationFrame(() => this.resize()); }
 
   /** Câmera 3D: visão geral ou seguindo o carro em destaque (líder, ou o escolhido). */
   toggleCamera() {

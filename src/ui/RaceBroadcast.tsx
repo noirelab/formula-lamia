@@ -1,4 +1,5 @@
-import { ChevronUp, ChevronDown, Minus, Timer, Video, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { ChevronUp, ChevronDown, Minus, Timer, Video, Pause, Play, RotateCcw, Flag, Minimize } from 'lucide-react';
 import { useDemo } from './useDemo';
 import { STEPS_PER_SECOND } from '../engine/params';
 import type { Race, Racer } from '../engine/race';
@@ -98,10 +99,45 @@ export function RaceBroadcast() {
         </section>
       )}
 
-      <nav className="bc-controls" aria-label="Controles da transmissão">
-        <button className="btn icon" onClick={() => d.toggleCamera()} aria-pressed={d.gl?.camera3d === 'chase'} title="Câmera no destaque (C)" aria-label="Câmera no destaque"><Video aria-hidden /></button>
-        <button className="btn icon" onClick={() => d.toggleBroadcast(false)} title="Sair da transmissão (T ou Esc)" aria-label="Sair da transmissão"><X aria-hidden /></button>
-      </nav>
+      <BroadcastBar />
     </div>
+  );
+}
+
+const SPEEDS = [1, 3, 10, 30];
+
+/** Barra de controles por cima da transmissão: aparece ao mexer o mouse e some 3 s depois. */
+function BroadcastBar() {
+  const d = useDemo(), race = d.race!;
+  const [shown, setShown] = useState(true);
+  useEffect(() => {
+    let timer = 0;
+    const wake = () => { setShown(true); clearTimeout(timer); timer = window.setTimeout(() => setShown(false), 3000); };
+    wake();
+    window.addEventListener('pointermove', wake); window.addEventListener('keydown', wake);
+    return () => { clearTimeout(timer); window.removeEventListener('pointermove', wake); window.removeEventListener('keydown', wake); };
+  }, []);
+  const chase = d.gl?.camera3d === 'chase';
+  return (
+    <nav className={`bc-bar${shown ? '' : ' hidden'}`} aria-label="Controles da corrida" onPointerEnter={() => setShown(true)}>
+      <button className="btn icon" onClick={() => d.togglePause()} aria-label={d.paused ? 'Continuar' : 'Pausar'} title="Espaço">
+        {d.paused ? <Play aria-hidden /> : <Pause aria-hidden />}
+      </button>
+      <div className="seg" role="group" aria-label="Velocidade">
+        {SPEEDS.map((v, i) => <button key={v} aria-pressed={d.speed === v} onClick={() => d.setSpeed(v)} title={`Tecla ${i + 1}`}>{v}×</button>)}
+      </div>
+      <span className="sep" aria-hidden="true" />
+      <div className="seg" role="group" aria-label="Vista">
+        <button aria-pressed={!d.view3d} onClick={() => d.view3d && d.toggle3d()} title="Tecla V">2D</button>
+        <button aria-pressed={d.view3d} onClick={() => !d.view3d && d.toggle3d()} disabled={!d.gl} title="Tecla V">3D</button>
+      </div>
+      <button className="btn" aria-pressed={chase} onClick={() => d.toggleCamera()} disabled={!d.gl || !d.view3d} title="Tecla C">
+        <Video aria-hidden /> Seguir o líder
+      </button>
+      <span className="sep" aria-hidden="true" />
+      <button className="btn" onClick={() => d.raceAgain()} title="Mesmos participantes, sorte nova"><RotateCcw aria-hidden /> {race.phase === 'finished' ? 'Correr de novo' : 'Reiniciar'}</button>
+      <button className="btn" onClick={() => d.endRace()}><Flag aria-hidden /> Encerrar</button>
+      <button className="btn icon" onClick={() => d.toggleBroadcast(false)} aria-label="Sair da tela cheia" title="T ou Esc"><Minimize aria-hidden /></button>
+    </nav>
   );
 }
