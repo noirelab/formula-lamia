@@ -2,7 +2,7 @@
 
 <img src="src/assets/lamia-icon.webp" alt="LAMIA, Machine Learning for Industry" width="120">
 
-# A IA aprende a dirigir
+# Formula LAMIA
 
 **150 carros, nenhum sabe dirigir. A cada 30 segundos, os melhores viram pais, e a próxima geração dirige melhor.**
 

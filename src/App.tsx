@@ -53,7 +53,7 @@ export default function App() {
     <div className={`app${d.present ? ' present' : ''}${d.deck ? ' deck-open' : ''}${d.broadcast && d.race ? ' race-tv' : ''}`}>
       <header className="masthead">
         <img className="logo" src={logo} alt="LAMIA, Machine Learning for Industry" />
-        <h1>A IA aprende a dirigir</h1>
+        <h1>Formula LAMIA</h1>
         <div className="tools">
           <button className="btn primary" onClick={() => (d.mode === 'race' ? d.endRace() : d.openRaceSetup())} title="Tecla R">
             <Flag aria-hidden /> {d.mode === 'race' ? 'Encerrar corrida' : 'Corrida'}

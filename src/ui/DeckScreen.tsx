@@ -18,7 +18,7 @@ export function DeckScreen() {
         <header className="deck-brand">
           <img src={logo} alt="LAMIA" />
           <div>
-            <strong>A IA aprende a dirigir</strong>
+            <strong>Formula LAMIA</strong>
             {deck && <span>Explicando a geração {deck.lesson.gen}</span>}
           </div>
         </header>

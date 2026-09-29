@@ -1,5 +1,5 @@
 ---
-name: A IA aprende a dirigir
+name: Formula LAMIA
 description: LAMIA neuroevolution demo dressed as an official race timing dossier, read on a TV from 3 m.
 colors:
   navy: "#04497D"
@@ -149,7 +149,7 @@ components:
     padding: "12px 14px"
 ---
 
-# Design System: A IA aprende a dirigir
+# Design System: Formula LAMIA
 
 ## Overview
 
